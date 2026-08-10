@@ -25,7 +25,7 @@ public class OpenAPIConfig {
 				.info(new Info()
 						.title("Recruitment API")
 						.version("1.0")
-						.description("API đăng nhập quản trị admin"))
+						.description("API Recruitment"))
 				.servers(List.of(new Server()
 						.url("http://localhost:" + serverPort)
 						.description("Local")))

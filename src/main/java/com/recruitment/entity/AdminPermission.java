@@ -2,25 +2,18 @@ package com.recruitment.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import java.time.Instant;
+import com.recruitment.enums.PermissionTypeEnum;
 
 @Entity
 @Table(name = "admin_permissions", uniqueConstraints = {
 		@UniqueConstraint(columnNames = { "api_path", "method" })
 })
-public class AdminPermission {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+public class AdminPermission extends BaseEntity {
 
 	@Column(nullable = false, length = 150)
 	private String name;
@@ -37,34 +30,9 @@ public class AdminPermission {
 	@Column(nullable = false, length = 10)
 	private String method;
 
-	@Column(nullable = false, length = 50)
-	private String type = "ACTION";
-
-	@Column(nullable = false)
-	private boolean active = true;
-
-	private Instant createdAt;
-
-	private Instant updatedAt;
-
-	@PrePersist
-	protected void onCreate() {
-		createdAt = Instant.now();
-		updatedAt = Instant.now();
-	}
-
-	@PreUpdate
-	protected void onUpdate() {
-		updatedAt = Instant.now();
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 20)
+	private PermissionTypeEnum type = PermissionTypeEnum.ACTION;
 
 	public String getName() {
 		return name;
@@ -106,27 +74,11 @@ public class AdminPermission {
 		this.method = method;
 	}
 
-	public String getType() {
+	public PermissionTypeEnum getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(PermissionTypeEnum type) {
 		this.type = type;
-	}
-
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
-	public Instant getCreatedAt() {
-		return createdAt;
-	}
-
-	public Instant getUpdatedAt() {
-		return updatedAt;
 	}
 }

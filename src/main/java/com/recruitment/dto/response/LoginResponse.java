@@ -1,4 +1,10 @@
 package com.recruitment.dto.response;
 
-public record LoginResponse(String accessToken, String refreshToken) {
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonPropertyOrder({ "accessToken", "refreshToken", "user" })
+public record LoginResponse(
+		String accessToken,
+		String refreshToken,
+		AdminUserResponse user) {
 }

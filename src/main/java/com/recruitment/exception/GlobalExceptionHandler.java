@@ -18,44 +18,52 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.recruitment.dto.response.ApiResponse;
+import com.recruitment.service.MessageService;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-	@ExceptionHandler(InvalidTokenException.class)
-	public ResponseEntity<ApiResponse<Void>> handleInvalidToken(InvalidTokenException ex) {
-		log.warn("InvalidTokenException: {}", ex.getMessage());
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(ApiResponse.unauthorized(ex.getMessage()));
+	private final MessageService messageService;
+
+	public GlobalExceptionHandler(MessageService messageService) {
+		this.messageService = messageService;
+	}
+
+	@ExceptionHandler(LocalizedMessageException.class)
+	public ResponseEntity<ApiResponse<Void>> handleLocalizedMessage(LocalizedMessageException ex) {
+		log.warn("{}: {}", ex.getClass().getSimpleName(), ex.getMessageKey());
+		String message = messageService.resolveLocalizedMessage(ex);
+		if (ex instanceof InvalidTokenException) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(ApiResponse.unauthorized(message));
+		}
+		if (ex instanceof ResourceNotFoundException) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(ApiResponse.notFound(message));
+		}
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(ApiResponse.badRequest(message));
 	}
 
 	@ExceptionHandler(BadCredentialsException.class)
 	public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
 		log.warn("BadCredentialsException: {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(ApiResponse.unauthorized("Email hoặc mật khẩu không đúng"));
+				.body(ApiResponse.unauthorized(messageService.get("error.unauthorized.invalid-credentials")));
 	}
 
 	@ExceptionHandler(DisabledException.class)
 	public ResponseEntity<ApiResponse<Void>> handleDisabled(DisabledException ex) {
 		log.warn("DisabledException: {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.FORBIDDEN)
-				.body(ApiResponse.forbidden("Tài khoản admin đã bị vô hiệu hóa"));
-	}
-
-	@ExceptionHandler(ResourceNotFoundException.class)
-	public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(ResourceNotFoundException ex) {
-		log.warn("ResourceNotFoundException: {}", ex.getMessage());
-		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-				.body(ApiResponse.notFound(ex.getMessage()));
+				.body(ApiResponse.forbidden(messageService.get("error.forbidden.account-disabled")));
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-		String message = String.format("Tham số '%s' có giá trị '%s' không hợp lệ",
-				ex.getName(), ex.getValue());
+		String message = messageService.get("error.bad-request.invalid-parameter", ex.getName(), ex.getValue());
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(ApiResponse.badRequest(message));
 	}
@@ -63,19 +71,19 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<ApiResponse<Void>> handleNotReadable(HttpMessageNotReadableException ex) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(ApiResponse.badRequest("Request body không hợp lệ hoặc bị thiếu"));
+				.body(ApiResponse.badRequest(messageService.get("error.bad-request.invalid-body")));
 	}
 
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
-		String message = String.format("Phương thức HTTP '%s' không được hỗ trợ cho endpoint này", ex.getMethod());
+		String message = messageService.get("error.method-not-allowed", ex.getMethod());
 		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-				.body(ApiResponse.ofError(405, message, "Method Not Allowed"));
+				.body(ApiResponse.of(405, message, null));
 	}
 
 	@ExceptionHandler(NoHandlerFoundException.class)
 	public ResponseEntity<ApiResponse<Void>> handleNoHandlerFound(NoHandlerFoundException ex) {
-		String message = String.format("Không tìm thấy endpoint '%s %s'", ex.getHttpMethod(), ex.getRequestURL());
+		String message = messageService.get("error.endpoint-not-found", ex.getHttpMethod(), ex.getRequestURL());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 				.body(ApiResponse.notFound(message));
 	}
@@ -89,13 +97,13 @@ public class GlobalExceptionHandler {
 				.collect(Collectors.toList());
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(ApiResponse.badRequest("Dữ liệu không hợp lệ", errors));
+				.body(ApiResponse.badRequest(messageService.get("error.bad-request.validation"), errors));
 	}
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex) {
 		log.error("Unexpected exception: {}", ex.getMessage(), ex);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(ApiResponse.error("Đã xảy ra lỗi hệ thống, vui lòng thử lại sau"));
+				.body(ApiResponse.error(messageService.get("error.internal")));
 	}
 }

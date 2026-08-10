@@ -3,9 +3,9 @@ package com.recruitment.dto.request;
 import jakarta.validation.constraints.NotBlank;
 
 public record LoginRequest(
-		@NotBlank(message = "Tên đăng nhập không được để trống")
+		@NotBlank(message = "{validation.username.required}")
 		String username,
 
-		@NotBlank(message = "Mật khẩu không được để trống")
+		@NotBlank(message = "{validation.password.required}")
 		String password) {
 }

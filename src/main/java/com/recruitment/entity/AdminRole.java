@@ -3,27 +3,17 @@ package com.recruitment.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "admin_roles")
-public class AdminRole {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+public class AdminRole extends BaseEntity {
 
 	@Column(nullable = false, unique = true, length = 100)
 	private String name;
@@ -34,38 +24,12 @@ public class AdminRole {
 	@Column(nullable = false)
 	private boolean fullAccess = false;
 
-	@Column(nullable = false)
-	private boolean active = true;
-
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(
 			name = "admin_role_permission",
 			joinColumns = @JoinColumn(name = "role_id"),
 			inverseJoinColumns = @JoinColumn(name = "permission_id"))
 	private List<AdminPermission> permissions = new ArrayList<>();
-
-	private Instant createdAt;
-
-	private Instant updatedAt;
-
-	@PrePersist
-	protected void onCreate() {
-		createdAt = Instant.now();
-		updatedAt = Instant.now();
-	}
-
-	@PreUpdate
-	protected void onUpdate() {
-		updatedAt = Instant.now();
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public String getName() {
 		return name;
@@ -91,27 +55,11 @@ public class AdminRole {
 		this.fullAccess = fullAccess;
 	}
 
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
 	public List<AdminPermission> getPermissions() {
 		return permissions;
 	}
 
 	public void setPermissions(List<AdminPermission> permissions) {
 		this.permissions = permissions;
-	}
-
-	public Instant getCreatedAt() {
-		return createdAt;
-	}
-
-	public Instant getUpdatedAt() {
-		return updatedAt;
 	}
 }

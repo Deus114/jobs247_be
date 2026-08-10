@@ -7,6 +7,10 @@
 spring:
   application:
     name: recruitment
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
   datasource:
     url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false
     username: ${DB_USERNAME}

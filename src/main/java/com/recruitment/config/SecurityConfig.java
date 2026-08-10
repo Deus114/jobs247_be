@@ -1,6 +1,6 @@
 package com.recruitment.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +27,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.recruitment.dto.response.ApiResponse;
+import com.recruitment.service.MessageService;
+import com.recruitment.util.constant.Constants;
 
 @Configuration
 @EnableWebSecurity
@@ -34,21 +36,28 @@ import com.recruitment.dto.response.ApiResponse;
 public class SecurityConfig {
 
 	private final JwtAuthenticationConverter jwtAuthenticationConverter;
+	private final MessageService messageService;
+	private final JsonMapper jsonMapper;
 
 	@Value("${cors.allowed-origins}")
 	private String corsAllowedOrigins;
 
-	public SecurityConfig(JwtAuthenticationConverter jwtAuthenticationConverter) {
+	public SecurityConfig(
+			JwtAuthenticationConverter jwtAuthenticationConverter,
+			MessageService messageService,
+			JsonMapper jsonMapper) {
 		this.jwtAuthenticationConverter = jwtAuthenticationConverter;
+		this.messageService = messageService;
+		this.jsonMapper = jsonMapper;
 	}
 
 	private static final String[] WHITELIST = {
-			"/v3/api-docs/**",
-			"/swagger-ui/**",
-			"/swagger-ui.html",
-			"/api/v1/admin/auth/login",
-			"/api/v1/admin/auth/refresh",
-			"/api/v1/admin/auth/logout"
+			Constants.SWAGGER_API_DOCS,
+			Constants.SWAGGER_UI,
+			Constants.SWAGGER_UI_HTML,
+			Constants.ADMIN_AUTH_LOGIN_PATH,
+			Constants.ADMIN_AUTH_REFRESH_PATH,
+			Constants.ADMIN_AUTH_LOGOUT_PATH
 	};
 
 	@Bean
@@ -61,7 +70,8 @@ public class SecurityConfig {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(origins);
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
+		configuration.setAllowedHeaders(Arrays.asList(
+				"Authorization", "Content-Type", "Cache-Control", "Accept-Language"));
 		configuration.setAllowCredentials(true);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -94,9 +104,9 @@ public class SecurityConfig {
 			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 			response.setCharacterEncoding("UTF-8");
 
-			ApiResponse<Void> body = ApiResponse.unauthorized("Token không hợp lệ hoặc đã hết hạn");
-			ObjectMapper mapper = new ObjectMapper();
-			response.getWriter().write(mapper.writeValueAsString(body));
+			ApiResponse<Void> body = ApiResponse.unauthorized(
+					messageService.get("error.unauthorized.invalid-token"));
+			response.getWriter().write(jsonMapper.writeValueAsString(body));
 		};
 	}
 
@@ -107,9 +117,9 @@ public class SecurityConfig {
 			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 			response.setCharacterEncoding("UTF-8");
 
-			ApiResponse<Void> body = ApiResponse.forbidden("Bạn không có quyền truy cập tài nguyên này");
-			ObjectMapper mapper = new ObjectMapper();
-			response.getWriter().write(mapper.writeValueAsString(body));
+			ApiResponse<Void> body = ApiResponse.forbidden(
+					messageService.get("error.forbidden.access-denied"));
+			response.getWriter().write(jsonMapper.writeValueAsString(body));
 		};
 	}
 

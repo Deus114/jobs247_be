@@ -1,17 +1,15 @@
 package com.recruitment.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({ "statusCode", "message", "data" })
 public class ApiResponse<T> {
 
 	private int statusCode;
 	private String message;
 	private T data;
-	private String error;
-	private List<String> details;
 
 	public ApiResponse() {
 	}
@@ -22,13 +20,6 @@ public class ApiResponse<T> {
 		this.data = data;
 	}
 
-	private ApiResponse(int statusCode, String message, String error, List<String> details) {
-		this.statusCode = statusCode;
-		this.message = message;
-		this.error = error;
-		this.details = details;
-	}
-
 	public static <T> ApiResponse<T> success(T data) {
 		return new ApiResponse<>(200, "Success", data);
 	}
@@ -37,32 +28,32 @@ public class ApiResponse<T> {
 		return new ApiResponse<>(200, message, data);
 	}
 
+	public static <T> ApiResponse<T> of(int statusCode, String message, T data) {
+		return new ApiResponse<>(statusCode, message, data);
+	}
+
 	public static <T> ApiResponse<T> notFound(String message) {
-		return new ApiResponse<>(404, message, "Not Found", null);
+		return new ApiResponse<>(404, message, null);
 	}
 
 	public static <T> ApiResponse<T> badRequest(String message) {
-		return new ApiResponse<>(400, message, "Bad Request", null);
+		return new ApiResponse<>(400, message, null);
 	}
 
-	public static <T> ApiResponse<T> badRequest(String message, List<String> details) {
-		return new ApiResponse<>(400, message, "Bad Request", details);
+	public static ApiResponse<Object> badRequest(String message, Object details) {
+		return new ApiResponse<>(400, message, details);
 	}
 
 	public static <T> ApiResponse<T> unauthorized(String message) {
-		return new ApiResponse<>(401, message, "Unauthorized", null);
+		return new ApiResponse<>(401, message, null);
 	}
 
 	public static <T> ApiResponse<T> forbidden(String message) {
-		return new ApiResponse<>(403, message, "Forbidden", null);
+		return new ApiResponse<>(403, message, null);
 	}
 
 	public static <T> ApiResponse<T> error(String message) {
-		return new ApiResponse<>(500, message, "Internal Server Error", null);
-	}
-
-	public static <T> ApiResponse<T> ofError(int statusCode, String message, String error) {
-		return new ApiResponse<>(statusCode, message, error, null);
+		return new ApiResponse<>(500, message, null);
 	}
 
 	public int getStatusCode() {
@@ -87,21 +78,5 @@ public class ApiResponse<T> {
 
 	public void setData(T data) {
 		this.data = data;
-	}
-
-	public String getError() {
-		return error;
-	}
-
-	public void setError(String error) {
-		this.error = error;
-	}
-
-	public List<String> getDetails() {
-		return details;
-	}
-
-	public void setDetails(List<String> details) {
-		this.details = details;
 	}
 }

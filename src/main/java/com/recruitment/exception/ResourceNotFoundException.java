@@ -1,8 +1,8 @@
 package com.recruitment.exception;
 
-public class ResourceNotFoundException extends RuntimeException {
+public class ResourceNotFoundException extends LocalizedMessageException {
 
-	public ResourceNotFoundException(String resource, String field, Object value) {
-		super(String.format("%s không tìm thấy với %s: '%s'", resource, field, value));
+	public ResourceNotFoundException(String resourceMessageKey, String field, Object value) {
+		super("error.not-found.resource", resourceMessageKey, field, value);
 	}
 }

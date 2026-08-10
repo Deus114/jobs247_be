@@ -1,8 +1,8 @@
 package com.recruitment.exception;
 
-public class InvalidTokenException extends RuntimeException {
+public class InvalidTokenException extends LocalizedMessageException {
 
-	public InvalidTokenException(String message) {
-		super(message);
+	public InvalidTokenException(String messageKey) {
+		super(messageKey);
 	}
 }

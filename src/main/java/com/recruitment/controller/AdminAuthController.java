@@ -1,6 +1,8 @@
 package com.recruitment.controller;
 
 import com.recruitment.service.AdminAuthService;
+import com.recruitment.service.AdminUserService;
+import com.recruitment.service.MessageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -20,21 +22,25 @@ import com.recruitment.dto.response.AdminUserResponse;
 import com.recruitment.dto.response.ApiResponse;
 import com.recruitment.dto.response.LoginResponse;
 import com.recruitment.exception.InvalidTokenException;
+import com.recruitment.util.constant.Constants;
 
 import java.util.Arrays;
 
 @RestController
-@RequestMapping("/api/v1/admin/auth")
+@RequestMapping(Constants.ADMIN_AUTH_BASE_PATH)
 public class AdminAuthController {
 
-	private static final String REFRESH_TOKEN_COOKIE_NAME = "admin_refresh_token";
-	private static final String COOKIE_PATH = "/api/v1/admin/auth";
-	private static final int COOKIE_MAX_AGE = 259200;
-
 	private final AdminAuthService adminAuthService;
+	private final AdminUserService adminUserService;
+	private final MessageService messageService;
 
-	public AdminAuthController(AdminAuthService adminAuthService) {
+	public AdminAuthController(
+			AdminAuthService adminAuthService,
+			AdminUserService adminUserService,
+			MessageService messageService) {
 		this.adminAuthService = adminAuthService;
+		this.adminUserService = adminUserService;
+		this.messageService = messageService;
 	}
 
 	@PostMapping("/login")
@@ -49,7 +55,8 @@ public class AdminAuthController {
 		LoginResponse loginResponse = adminAuthService.login(request, deviceInfo, ipAddress);
 		setRefreshTokenCookie(httpResponse, loginResponse.refreshToken());
 
-		return ResponseEntity.ok(ApiResponse.success("Đăng nhập admin thành công", loginResponse));
+		return ResponseEntity.ok(ApiResponse.success(
+				messageService.get("auth.login.success"), loginResponse));
 	}
 
 	@PostMapping("/refresh")
@@ -60,13 +67,14 @@ public class AdminAuthController {
 
 		String rawRefreshToken = extractRefreshToken(body, httpRequest);
 		if (rawRefreshToken == null) {
-			throw new InvalidTokenException("Refresh token không được cung cấp");
+			throw new InvalidTokenException("error.refresh-token.missing");
 		}
 
 		LoginResponse loginResponse = adminAuthService.refresh(rawRefreshToken);
 		setRefreshTokenCookie(httpResponse, loginResponse.refreshToken());
 
-		return ResponseEntity.ok(ApiResponse.success("Token đã được làm mới", loginResponse));
+		return ResponseEntity.ok(ApiResponse.success(
+				messageService.get("auth.refresh.success"), loginResponse));
 	}
 
 	@PostMapping("/logout")
@@ -80,13 +88,14 @@ public class AdminAuthController {
 		}
 		clearRefreshTokenCookie(httpResponse);
 
-		return ResponseEntity.ok(ApiResponse.success("Đăng xuất thành công", null));
+		return ResponseEntity.ok(ApiResponse.success(
+				messageService.get("auth.logout.success"), null));
 	}
 
 	@GetMapping("/me")
 	public ResponseEntity<ApiResponse<AdminUserResponse>> getMe(@AuthenticationPrincipal Jwt jwt) {
-		AdminUserResponse response = adminAuthService.getMe(jwt.getSubject());
-		return ResponseEntity.ok(ApiResponse.success(response));
+		AdminUserResponse response = adminUserService.getMe(jwt.getSubject());
+		return ResponseEntity.ok(ApiResponse.success(messageService.get("common.success"), response));
 	}
 
 	private String extractRefreshToken(RefreshRequest body, HttpServletRequest request) {
@@ -105,7 +114,8 @@ public class AdminAuthController {
 			return null;
 		}
 		return Arrays.stream(request.getCookies())
-				.filter(cookie -> cookie != null && REFRESH_TOKEN_COOKIE_NAME.equals(cookie.getName()))
+				.filter(cookie -> cookie != null
+						&& Constants.ADMIN_REFRESH_TOKEN_COOKIE_NAME.equals(cookie.getName()))
 				.map(cookie -> cookie.getValue())
 				.findFirst()
 				.orElse(null);
@@ -113,13 +123,15 @@ public class AdminAuthController {
 
 	private void setRefreshTokenCookie(HttpServletResponse response, String rawToken) {
 		response.setHeader("Set-Cookie",
-				REFRESH_TOKEN_COOKIE_NAME + "=" + rawToken
-						+ "; HttpOnly; Secure; SameSite=Lax; Path=" + COOKIE_PATH
-						+ "; Max-Age=" + COOKIE_MAX_AGE);
+				Constants.ADMIN_REFRESH_TOKEN_COOKIE_NAME + "=" + rawToken
+						+ "; HttpOnly; Secure; SameSite=Lax; Path=" + Constants.ADMIN_REFRESH_TOKEN_COOKIE_PATH
+						+ "; Max-Age=" + Constants.ADMIN_REFRESH_TOKEN_COOKIE_MAX_AGE);
 	}
 
 	private void clearRefreshTokenCookie(HttpServletResponse response) {
-		response.setHeader("Set-Cookie", REFRESH_TOKEN_COOKIE_NAME + "=; Max-Age=0; Path=" + COOKIE_PATH);
+		response.setHeader("Set-Cookie",
+				Constants.ADMIN_REFRESH_TOKEN_COOKIE_NAME + "=; Max-Age=0; Path="
+						+ Constants.ADMIN_REFRESH_TOKEN_COOKIE_PATH);
 	}
 
 	private String extractClientIp(HttpServletRequest request) {
