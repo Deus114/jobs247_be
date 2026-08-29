@@ -9,6 +9,12 @@ public final class Constants {
 	public static final String ADMIN_AUTH_REFRESH_PATH = ADMIN_AUTH_BASE_PATH + "/refresh";
 	public static final String ADMIN_AUTH_LOGOUT_PATH = ADMIN_AUTH_BASE_PATH + "/logout";
 
+	// --- Admin Users API ---
+
+	public static final String ADMIN_USERS_BASE_PATH = "/api/v1/admin/users";
+	public static final String ADMIN_USERS_ME_PATH = ADMIN_USERS_BASE_PATH + "/me";
+	public static final String ADMIN_API_PATTERN = "/api/v1/admin/**";
+
 	// --- Admin Auth Cookie ---
 
 	public static final String ADMIN_REFRESH_TOKEN_COOKIE_NAME = "admin_refresh_token";

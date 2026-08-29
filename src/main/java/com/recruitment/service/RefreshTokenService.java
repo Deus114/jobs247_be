@@ -1,5 +1,11 @@
 package com.recruitment.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.util.HexFormat;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,12 +14,6 @@ import com.recruitment.entity.AdminUser;
 import com.recruitment.entity.RefreshToken;
 import com.recruitment.exception.InvalidTokenException;
 import com.recruitment.repository.RefreshTokenRepository;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
-import java.util.HexFormat;
 
 @Service
 public class RefreshTokenService {
@@ -39,7 +39,6 @@ public class RefreshTokenService {
 		refreshTokenRepository.save(refreshToken);
 	}
 
-	@Transactional(readOnly = true)
 	public RefreshToken validateForRefresh(String rawRefreshToken) {
 		RefreshToken storedToken = refreshTokenRepository.findByToken(hashToken(rawRefreshToken))
 				.orElseThrow(() -> new InvalidTokenException("error.refresh-token.invalid"));
@@ -66,6 +65,11 @@ public class RefreshTokenService {
 		RefreshToken storedToken = refreshTokenRepository.findByToken(hashToken(rawRefreshToken))
 				.orElseThrow(() -> new InvalidTokenException("error.refresh-token.invalid"));
 		revoke(storedToken);
+	}
+
+	@Transactional
+	public void revokeAllActiveByUsername(String username) {
+		refreshTokenRepository.revokeAllActiveByUsername(username);
 	}
 
 	private String hashToken(String rawToken) {

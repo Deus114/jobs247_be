@@ -1,5 +1,7 @@
 package com.recruitment.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,8 +10,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "admin_roles")
@@ -25,6 +26,7 @@ public class AdminRole extends BaseEntity {
 	private boolean fullAccess = false;
 
 	@ManyToMany(fetch = FetchType.LAZY)
+	@BatchSize(size = 20)
 	@JoinTable(
 			name = "admin_role_permission",
 			joinColumns = @JoinColumn(name = "role_id"),

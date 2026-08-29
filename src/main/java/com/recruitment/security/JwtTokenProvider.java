@@ -1,5 +1,9 @@
 package com.recruitment.security;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -9,10 +13,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Component;
 
 import com.recruitment.entity.AdminUser;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 
 @Component
 public class JwtTokenProvider {

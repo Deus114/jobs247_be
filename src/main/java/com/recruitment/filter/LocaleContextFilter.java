@@ -1,11 +1,11 @@
-package com.recruitment.config;
+package com.recruitment.filter;
 
 import java.io.IOException;
 import java.util.Locale;
 
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.LocaleResolver;

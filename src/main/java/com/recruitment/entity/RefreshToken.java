@@ -1,12 +1,11 @@
 package com.recruitment.entity;
 
+import java.time.Instant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import java.time.Instant;
 
 @Entity
 @Table(name = "admin_refresh_tokens")

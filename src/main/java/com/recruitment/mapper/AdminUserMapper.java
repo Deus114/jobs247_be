@@ -2,19 +2,25 @@ package com.recruitment.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.recruitment.dto.response.AdminUserResponse;
+import com.recruitment.dto.response.admin.AdminUserResponse;
 import com.recruitment.entity.AdminUser;
 
 @Component
 public class AdminUserMapper {
+
+	private final AdminRoleMapper adminRoleMapper;
+
+	public AdminUserMapper(AdminRoleMapper adminRoleMapper) {
+		this.adminRoleMapper = adminRoleMapper;
+	}
 
 	public AdminUserResponse toResponse(AdminUser adminUser) {
 		return new AdminUserResponse(
 				adminUser.getId(),
 				adminUser.getUsername(),
 				adminUser.getName(),
-				adminUser.getRole().getName(),
-				adminUser.getRole().isFullAccess(),
+				adminUser.getAvatar(),
+				adminRoleMapper.toResponse(adminUser.getRole()),
 				adminUser.isActive(),
 				adminUser.getCreatedAt(),
 				adminUser.getUpdatedAt());

@@ -10,14 +10,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import com.recruitment.dto.response.ApiResponse;
+import com.recruitment.dto.response.common.ApiResponse;
 import com.recruitment.service.MessageService;
 
 @RestControllerAdvice
@@ -42,6 +45,18 @@ public class GlobalExceptionHandler {
 		if (ex instanceof ResourceNotFoundException) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
 					.body(ApiResponse.notFound(message));
+		}
+		if (ex instanceof DuplicateResourceException) {
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+					.body(ApiResponse.of(409, message, null));
+		}
+		if (ex instanceof BusinessRuleException || ex instanceof FileValidationException) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(ApiResponse.badRequest(message));
+		}
+		if (ex instanceof StorageException) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(ApiResponse.error(message));
 		}
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(ApiResponse.badRequest(message));
@@ -88,8 +103,8 @@ public class GlobalExceptionHandler {
 				.body(ApiResponse.notFound(message));
 	}
 
-	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ApiResponse<Object>> handleValidationException(MethodArgumentNotValidException ex) {
+	@ExceptionHandler({ MethodArgumentNotValidException.class, BindException.class })
+	public ResponseEntity<ApiResponse<Object>> handleValidationException(BindException ex) {
 		List<String> errors = ex.getBindingResult()
 				.getFieldErrors()
 				.stream()
@@ -98,6 +113,20 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(ApiResponse.badRequest(messageService.get("error.bad-request.validation"), errors));
+	}
+
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+		log.warn("MaxUploadSizeExceededException: {}", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(ApiResponse.badRequest(messageService.get("error.file.too-large", 10)));
+	}
+
+	@ExceptionHandler(MultipartException.class)
+	public ResponseEntity<ApiResponse<Void>> handleMultipart(MultipartException ex) {
+		log.warn("MultipartException: {}", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(ApiResponse.badRequest(messageService.get("error.file.multipart-invalid")));
 	}
 
 	@ExceptionHandler(Exception.class)

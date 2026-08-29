@@ -1,7 +1,5 @@
 package com.recruitment.config;
 
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
-
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -15,6 +13,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 @Configuration
 public class JwtConfig {

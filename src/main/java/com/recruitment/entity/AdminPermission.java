@@ -1,5 +1,7 @@
 package com.recruitment.entity;
 
+import com.recruitment.enums.PermissionTypeEnum;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,11 +9,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import com.recruitment.enums.PermissionTypeEnum;
-
 @Entity
 @Table(name = "admin_permissions", uniqueConstraints = {
-		@UniqueConstraint(columnNames = { "api_path", "method" })
+		@UniqueConstraint(columnNames = { "path", "method" })
 })
 public class AdminPermission extends BaseEntity {
 
@@ -24,8 +24,8 @@ public class AdminPermission extends BaseEntity {
 	@Column(nullable = false, length = 100)
 	private String module;
 
-	@Column(name = "api_path", nullable = false, length = 255)
-	private String apiPath;
+	@Column(nullable = false, length = 255)
+	private String path;
 
 	@Column(nullable = false, length = 10)
 	private String method;
@@ -58,12 +58,12 @@ public class AdminPermission extends BaseEntity {
 		this.module = module;
 	}
 
-	public String getApiPath() {
-		return apiPath;
+	public String getPath() {
+		return path;
 	}
 
-	public void setApiPath(String apiPath) {
-		this.apiPath = apiPath;
+	public void setPath(String path) {
+		this.path = path;
 	}
 
 	public String getMethod() {

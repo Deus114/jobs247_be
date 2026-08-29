@@ -1,7 +1,5 @@
 package com.recruitment.config;
 
-import tools.jackson.databind.json.JsonMapper;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,6 +17,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -26,9 +26,14 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.recruitment.dto.response.ApiResponse;
+import com.recruitment.dto.response.common.ApiResponse;
+import com.recruitment.security.PermissionAuthorizationManager;
 import com.recruitment.service.MessageService;
 import com.recruitment.util.constant.Constants;
+
+import tools.jackson.databind.json.JsonMapper;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Configuration
 @EnableWebSecurity
@@ -36,6 +41,7 @@ import com.recruitment.util.constant.Constants;
 public class SecurityConfig {
 
 	private final JwtAuthenticationConverter jwtAuthenticationConverter;
+	private final PermissionAuthorizationManager permissionAuthorizationManager;
 	private final MessageService messageService;
 	private final JsonMapper jsonMapper;
 
@@ -44,9 +50,11 @@ public class SecurityConfig {
 
 	public SecurityConfig(
 			JwtAuthenticationConverter jwtAuthenticationConverter,
+			PermissionAuthorizationManager permissionAuthorizationManager,
 			MessageService messageService,
 			JsonMapper jsonMapper) {
 		this.jwtAuthenticationConverter = jwtAuthenticationConverter;
+		this.permissionAuthorizationManager = permissionAuthorizationManager;
 		this.messageService = messageService;
 		this.jsonMapper = jsonMapper;
 	}
@@ -56,8 +64,7 @@ public class SecurityConfig {
 			Constants.SWAGGER_UI,
 			Constants.SWAGGER_UI_HTML,
 			Constants.ADMIN_AUTH_LOGIN_PATH,
-			Constants.ADMIN_AUTH_REFRESH_PATH,
-			Constants.ADMIN_AUTH_LOGOUT_PATH
+			Constants.ADMIN_AUTH_REFRESH_PATH
 	};
 
 	@Bean
@@ -87,14 +94,35 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(WHITELIST).permitAll()
+						.requestMatchers(Constants.ADMIN_USERS_ME_PATH, Constants.ADMIN_AUTH_LOGOUT_PATH)
+						.authenticated()
+						.requestMatchers(Constants.ADMIN_API_PATTERN).access(permissionAuthorizationManager)
 						.anyRequest().authenticated())
-				.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
-						.jwtAuthenticationConverter(jwtAuthenticationConverter)))
+				.oauth2ResourceServer(oauth2 -> oauth2
+						.bearerTokenResolver(bearerTokenResolver())
+						.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
 				.exceptionHandling(ex -> ex
 						.authenticationEntryPoint(authenticationEntryPoint())
 						.accessDeniedHandler(accessDeniedHandler()));
 
 		return http.build();
+	}
+
+	@Bean
+	BearerTokenResolver bearerTokenResolver() {
+		DefaultBearerTokenResolver delegate = new DefaultBearerTokenResolver();
+		return request -> {
+			if (isPublicAuthPath(request)) {
+				return null;
+			}
+			return delegate.resolve(request);
+		};
+	}
+
+	private boolean isPublicAuthPath(HttpServletRequest request) {
+		String path = request.getRequestURI();
+		return Constants.ADMIN_AUTH_LOGIN_PATH.equals(path)
+				|| Constants.ADMIN_AUTH_REFRESH_PATH.equals(path);
 	}
 
 	@Bean

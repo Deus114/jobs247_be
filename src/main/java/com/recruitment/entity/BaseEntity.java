@@ -1,5 +1,6 @@
 package com.recruitment.entity;
 
+import java.time.Instant;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,8 +10,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
 import org.hibernate.annotations.SoftDelete;
-
-import java.time.Instant;
 
 @MappedSuperclass
 @SoftDelete(columnName = "deleted_at")

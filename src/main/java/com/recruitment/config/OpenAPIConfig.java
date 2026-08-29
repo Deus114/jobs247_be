@@ -9,12 +9,13 @@ import org.springframework.context.annotation.Configuration;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class OpenAPIConfig {
+
+	public static final String BEARER_AUTH_SCHEME = "Bearer Authentication";
 
 	@Value("${server.port}")
 	private String serverPort;
@@ -29,8 +30,7 @@ public class OpenAPIConfig {
 				.servers(List.of(new Server()
 						.url("http://localhost:" + serverPort)
 						.description("Local")))
-				.addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
-				.components(new Components().addSecuritySchemes("Bearer Authentication",
+				.components(new Components().addSecuritySchemes(BEARER_AUTH_SCHEME,
 						new SecurityScheme()
 								.type(SecurityScheme.Type.HTTP)
 								.bearerFormat("JWT")
