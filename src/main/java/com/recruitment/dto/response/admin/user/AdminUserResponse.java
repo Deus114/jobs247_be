@@ -1,6 +1,8 @@
-package com.recruitment.dto.response.admin;
+package com.recruitment.dto.response.admin.user;
 
 import java.time.Instant;
+
+import com.recruitment.dto.response.admin.role.AdminRoleResponse;
 
 public record AdminUserResponse(
 		Long id,

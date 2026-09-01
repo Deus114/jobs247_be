@@ -1,10 +1,13 @@
 package com.recruitment.config;
 
 import java.util.Arrays;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.util.StringUtils;
 
 @ConfigurationProperties(prefix = "file-upload")
 public class FileUploadProperties {
@@ -46,9 +49,12 @@ public class FileUploadProperties {
 	}
 
 	private Set<String> splitToSet(String value) {
+		if (!StringUtils.hasText(value)) {
+			return Set.of();
+		}
 		return Arrays.stream(value.split(","))
-				.map(String::trim)
-				.map(String::toLowerCase)
+				.filter(Objects::nonNull)
+				.map(item -> item.trim().toLowerCase(Locale.ROOT))
 				.filter(item -> !item.isEmpty())
 				.collect(Collectors.toSet());
 	}

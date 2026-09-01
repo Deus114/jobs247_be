@@ -1,0 +1,93 @@
+services:
+  mysql:
+  image: mysql:8.4
+
+  container_name: jobs247-mysql
+
+  restart: unless-stopped
+
+  command: --default-time-zone=+07:00
+
+  environment:
+    TZ: Asia/Ho_Chi_Minh
+
+    MYSQL_DATABASE: ${DB_NAME}
+    MYSQL_USER: ${DB_USERNAME}
+    MYSQL_PASSWORD: ${DB_PASSWORD}
+    MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+  volumes:
+    - mysql_data:/var/lib/mysql
+
+  networks:
+    - jobs247-network
+
+  healthcheck:
+    test:
+      [
+        "CMD-SHELL",
+        "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD}",
+      ]
+    interval: 10s
+    timeout: 5s
+    retries: 10
+
+    networks:
+      - jobs247-network
+
+    healthcheck:
+      test:
+        ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: YOUR_DOCKERHUB_USERNAME/jobs247-backend:latest
+
+    container_name: jobs247-backend
+
+    restart: unless-stopped
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    env_file:
+      - .env
+
+    environment:
+      SERVER_PORT: ${SERVER_PORT}
+
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+
+      SEED_ADMIN: ${SEED_ADMIN}
+
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_PUBLIC_BASE_URL: ${AWS_S3_PUBLIC_BASE_URL}
+
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    networks:
+      - jobs247-network
+
+networks:
+  jobs247-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

@@ -5,7 +5,7 @@ import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.recruitment.dto.request.admin.AdminUserFilterRequest;
+import com.recruitment.dto.request.admin.user.AdminUserFilterRequest;
 import com.recruitment.entity.AdminUser;
 
 public final class AdminUserSpecification {

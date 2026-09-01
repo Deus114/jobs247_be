@@ -35,6 +35,12 @@ public class AdminRbacSeeder implements CommandLineRunner {
 	private static final String DEFAULT_USERNAME = "admin";
 	private static final String DEFAULT_PASSWORD = "admin";
 	private static final String MODULE_ADMIN_USER = "admin-user";
+	private static final String MODULE_ADMIN_ROLE = "admin-role";
+	private static final String MODULE_ADMIN_PERMISSION = "admin-permission";
+	private static final Set<String> MANAGED_MODULES = Set.of(
+			MODULE_ADMIN_USER,
+			MODULE_ADMIN_ROLE,
+			MODULE_ADMIN_PERMISSION);
 
 	private final AdminRoleRepository adminRoleRepository;
 	private final AdminUserRepository adminUserRepository;
@@ -58,7 +64,7 @@ public class AdminRbacSeeder implements CommandLineRunner {
 	@Override
 	@Transactional
 	public void run(String... args) {
-		syncAdminUserPermissions();
+		syncManagedPermissions();
 
 		if (adminUserRepository.count() == 0) {
 			AdminRole superAdminRole = seedSuperAdminRole();
@@ -71,22 +77,11 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		log.info("Admin permission cache reloaded");
 	}
 
-	private void syncAdminUserPermissions() {
-		List<PermissionSeed> seeds = List.of(
-				new PermissionSeed("VIEW_ADMIN_USERS", "Xem danh sách admin", "GET",
-						Constants.ADMIN_USERS_BASE_PATH),
-				new PermissionSeed("VIEW_ADMIN_USER", "Xem chi tiết admin", "GET",
-						Constants.ADMIN_USERS_BASE_PATH + "/{id}"),
-				new PermissionSeed("CREATE_ADMIN_USER", "Tạo admin", "POST",
-						Constants.ADMIN_USERS_BASE_PATH),
-				new PermissionSeed("UPDATE_ADMIN_USER", "Cập nhật admin", "PUT",
-						Constants.ADMIN_USERS_BASE_PATH + "/{id}"),
-				new PermissionSeed("DELETE_ADMIN_USER", "Xóa mềm admin", "DELETE",
-						Constants.ADMIN_USERS_BASE_PATH + "/{id}"),
-				new PermissionSeed("RESTORE_ADMIN_USER", "Khôi phục admin", "PATCH",
-						Constants.ADMIN_USERS_BASE_PATH + "/{id}/restore"),
-				new PermissionSeed("PERMANENT_DELETE_ADMIN_USER", "Xóa vĩnh viễn admin", "DELETE",
-						Constants.ADMIN_USERS_BASE_PATH + "/{id}/permanent"));
+	private void syncManagedPermissions() {
+		List<PermissionSeed> seeds = new ArrayList<>();
+		seeds.addAll(adminUserPermissionSeeds());
+		seeds.addAll(adminRolePermissionSeeds());
+		seeds.addAll(adminPermissionPermissionSeeds());
 
 		Set<String> seedKeys = new HashSet<>();
 		int created = 0;
@@ -114,7 +109,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 
 		List<Long> removedIds = new ArrayList<>();
 		for (AdminPermission existing : adminPermissionRepository.findAll()) {
-			if (!seedKeys.contains(permissionKey(existing.getPath(), existing.getMethod()))) {
+			if (MANAGED_MODULES.contains(existing.getModule())
+					&& !seedKeys.contains(permissionKey(existing.getPath(), existing.getMethod()))) {
 				removedIds.add(existing.getId());
 			}
 		}
@@ -127,6 +123,61 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		log.info("Permissions synced — created={}, updated={}, removed={}", created, updated, removedIds.size());
 	}
 
+	private List<PermissionSeed> adminUserPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_ADMIN_USERS", "Xem danh sách admin", MODULE_ADMIN_USER, "GET",
+						Constants.ADMIN_USERS_BASE_PATH),
+				new PermissionSeed("VIEW_ADMIN_USER", "Xem chi tiết admin", MODULE_ADMIN_USER, "GET",
+						Constants.ADMIN_USERS_BASE_PATH + "/{id}"),
+				new PermissionSeed("CREATE_ADMIN_USER", "Tạo admin", MODULE_ADMIN_USER, "POST",
+						Constants.ADMIN_USERS_BASE_PATH),
+				new PermissionSeed("UPDATE_ADMIN_USER", "Cập nhật admin", MODULE_ADMIN_USER, "PUT",
+						Constants.ADMIN_USERS_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_ADMIN_USER", "Xóa mềm admin", MODULE_ADMIN_USER, "DELETE",
+						Constants.ADMIN_USERS_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_ADMIN_USER", "Khôi phục admin", MODULE_ADMIN_USER, "PATCH",
+						Constants.ADMIN_USERS_BASE_PATH + "/{id}/restore"),
+				new PermissionSeed("PERMANENT_DELETE_ADMIN_USER", "Xóa vĩnh viễn admin", MODULE_ADMIN_USER, "DELETE",
+						Constants.ADMIN_USERS_BASE_PATH + "/{id}/permanent"));
+	}
+
+	private List<PermissionSeed> adminRolePermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_ADMIN_ROLES", "Xem danh sách vai trò", MODULE_ADMIN_ROLE, "GET",
+						Constants.ADMIN_ROLES_BASE_PATH),
+				new PermissionSeed("VIEW_ADMIN_ROLE", "Xem chi tiết vai trò", MODULE_ADMIN_ROLE, "GET",
+						Constants.ADMIN_ROLES_BASE_PATH + "/{id}"),
+				new PermissionSeed("CREATE_ADMIN_ROLE", "Tạo vai trò", MODULE_ADMIN_ROLE, "POST",
+						Constants.ADMIN_ROLES_BASE_PATH),
+				new PermissionSeed("UPDATE_ADMIN_ROLE", "Cập nhật vai trò", MODULE_ADMIN_ROLE, "PUT",
+						Constants.ADMIN_ROLES_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_ADMIN_ROLE", "Xóa mềm vai trò", MODULE_ADMIN_ROLE, "DELETE",
+						Constants.ADMIN_ROLES_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_ADMIN_ROLE", "Khôi phục vai trò", MODULE_ADMIN_ROLE, "PATCH",
+						Constants.ADMIN_ROLES_BASE_PATH + "/{id}/restore"),
+				new PermissionSeed("PERMANENT_DELETE_ADMIN_ROLE", "Xóa vĩnh viễn vai trò", MODULE_ADMIN_ROLE, "DELETE",
+						Constants.ADMIN_ROLES_BASE_PATH + "/{id}/permanent"));
+	}
+
+	private List<PermissionSeed> adminPermissionPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_ADMIN_PERMISSIONS", "Xem danh sách quyền", MODULE_ADMIN_PERMISSION, "GET",
+						Constants.ADMIN_PERMISSIONS_BASE_PATH),
+				new PermissionSeed("VIEW_ADMIN_PERMISSION", "Xem chi tiết quyền", MODULE_ADMIN_PERMISSION, "GET",
+						Constants.ADMIN_PERMISSIONS_BASE_PATH + "/{id}"),
+				new PermissionSeed("CREATE_ADMIN_PERMISSION", "Tạo quyền", MODULE_ADMIN_PERMISSION, "POST",
+						Constants.ADMIN_PERMISSIONS_BASE_PATH),
+				new PermissionSeed("UPDATE_ADMIN_PERMISSION", "Cập nhật quyền", MODULE_ADMIN_PERMISSION, "PUT",
+						Constants.ADMIN_PERMISSIONS_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_ADMIN_PERMISSION", "Xóa mềm quyền", MODULE_ADMIN_PERMISSION, "DELETE",
+						Constants.ADMIN_PERMISSIONS_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_ADMIN_PERMISSION", "Khôi phục quyền", MODULE_ADMIN_PERMISSION, "PATCH",
+						Constants.ADMIN_PERMISSIONS_BASE_PATH + "/{id}/restore"),
+				new PermissionSeed("PERMANENT_DELETE_ADMIN_PERMISSION", "Xóa vĩnh viễn quyền", MODULE_ADMIN_PERMISSION,
+						"DELETE",
+						Constants.ADMIN_PERMISSIONS_BASE_PATH + "/{id}/permanent"));
+	}
+
 	private boolean applySeed(AdminPermission permission, PermissionSeed seed) {
 		boolean changed = permission.getId() == null;
 		if (!Objects.equals(permission.getName(), seed.name())) {
@@ -137,8 +188,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 			permission.setDescription(seed.description());
 			changed = true;
 		}
-		if (!Objects.equals(permission.getModule(), MODULE_ADMIN_USER)) {
-			permission.setModule(MODULE_ADMIN_USER);
+		if (!Objects.equals(permission.getModule(), seed.module())) {
+			permission.setModule(seed.module());
 			changed = true;
 		}
 		if (!Objects.equals(permission.getPath(), seed.path())) {
@@ -185,6 +236,6 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		adminUserRepository.save(admin);
 	}
 
-	private record PermissionSeed(String name, String description, String method, String path) {
+	private record PermissionSeed(String name, String description, String module, String method, String path) {
 	}
 }

@@ -1,4 +1,4 @@
-package com.recruitment.dto.response.admin;
+package com.recruitment.dto.response.admin.permission;
 
 import com.recruitment.enums.PermissionTypeEnum;
 

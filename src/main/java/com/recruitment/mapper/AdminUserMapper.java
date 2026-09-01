@@ -2,7 +2,7 @@ package com.recruitment.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.recruitment.dto.response.admin.AdminUserResponse;
+import com.recruitment.dto.response.admin.user.AdminUserResponse;
 import com.recruitment.entity.AdminUser;
 
 @Component

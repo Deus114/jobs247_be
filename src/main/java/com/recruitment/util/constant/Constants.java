@@ -13,6 +13,15 @@ public final class Constants {
 
 	public static final String ADMIN_USERS_BASE_PATH = "/api/v1/admin/users";
 	public static final String ADMIN_USERS_ME_PATH = ADMIN_USERS_BASE_PATH + "/me";
+
+	// --- Admin Roles API ---
+
+	public static final String ADMIN_ROLES_BASE_PATH = "/api/v1/admin/roles";
+
+	// --- Admin Permissions API ---
+
+	public static final String ADMIN_PERMISSIONS_BASE_PATH = "/api/v1/admin/permissions";
+
 	public static final String ADMIN_API_PATTERN = "/api/v1/admin/**";
 
 	// --- Admin Auth Cookie ---

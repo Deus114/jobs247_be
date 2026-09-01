@@ -1,4 +1,4 @@
-package com.recruitment.dto.request.auth;
+package com.recruitment.dto.request.admin.auth;
 
 import jakarta.validation.constraints.NotBlank;
 

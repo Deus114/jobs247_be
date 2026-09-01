@@ -1,4 +1,4 @@
-package com.recruitment.dto.request.admin;
+package com.recruitment.dto.request.admin.user;
 
 import org.springframework.web.multipart.MultipartFile;
 

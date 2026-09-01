@@ -11,11 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.recruitment.dto.request.admin.AdminUserFilterRequest;
-import com.recruitment.dto.request.admin.CreateAdminUserRequest;
-import com.recruitment.dto.request.admin.UpdateAdminUserRequest;
-import com.recruitment.dto.request.admin.UpdateMeRequest;
-import com.recruitment.dto.response.admin.AdminUserResponse;
+import com.recruitment.dto.request.admin.user.AdminUserFilterRequest;
+import com.recruitment.dto.request.admin.user.CreateAdminUserRequest;
+import com.recruitment.dto.request.admin.user.UpdateAdminUserRequest;
+import com.recruitment.dto.request.admin.user.UpdateMeRequest;
+import com.recruitment.dto.response.admin.user.AdminUserResponse;
 import com.recruitment.dto.response.common.ApiResponse;
 import com.recruitment.dto.response.common.PaginatedResponse;
 import com.recruitment.dto.response.common.UploadedFileResponse;
@@ -82,9 +82,9 @@ public class AdminUserService {
 						filter.roleId(),
 						filter.active(),
 						toNativePageable(pageable))
-						.map(adminUserMapper::toResponse)
+						.map(adminUser -> adminUserMapper.toResponse(adminUser))
 				: adminUserRepository.findAll(AdminUserSpecification.build(filter), pageable)
-						.map(adminUserMapper::toResponse);
+						.map(adminUser -> adminUserMapper.toResponse(adminUser));
 
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("admin-user.list.success"),

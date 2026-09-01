@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.recruitment.dto.response.admin.AdminPermissionResponse;
-import com.recruitment.dto.response.admin.AdminRoleResponse;
+import com.recruitment.dto.response.admin.permission.AdminPermissionResponse;
+import com.recruitment.dto.response.admin.role.AdminRoleResponse;
 import com.recruitment.entity.AdminPermission;
 import com.recruitment.entity.AdminRole;
 
@@ -29,8 +29,11 @@ public class AdminRoleMapper {
 	}
 
 	public List<AdminPermissionResponse> toPermissionResponses(List<AdminPermission> permissions) {
+		if (permissions == null || permissions.isEmpty()) {
+			return List.of();
+		}
 		return permissions.stream()
-				.map(adminPermissionMapper::toResponse)
+				.map(permission -> adminPermissionMapper.toResponse(permission))
 				.toList();
 	}
 }

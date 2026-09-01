@@ -19,11 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.recruitment.config.OpenAPIConfig;
-import com.recruitment.dto.request.admin.AdminUserFilterRequest;
-import com.recruitment.dto.request.admin.CreateAdminUserRequest;
-import com.recruitment.dto.request.admin.UpdateAdminUserRequest;
-import com.recruitment.dto.request.admin.UpdateMeRequest;
-import com.recruitment.dto.response.admin.AdminUserResponse;
+import com.recruitment.dto.request.admin.user.AdminUserFilterRequest;
+import com.recruitment.dto.request.admin.user.CreateAdminUserRequest;
+import com.recruitment.dto.request.admin.user.UpdateAdminUserRequest;
+import com.recruitment.dto.request.admin.user.UpdateMeRequest;
+import com.recruitment.dto.response.admin.user.AdminUserResponse;
 import com.recruitment.dto.response.common.ApiResponse;
 import com.recruitment.dto.response.common.PaginatedResponse;
 import com.recruitment.service.AdminUserService;
@@ -33,10 +33,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(Constants.ADMIN_USERS_BASE_PATH)
+@Tag(name = "Admin User")
 @SecurityRequirement(name = OpenAPIConfig.BEARER_AUTH_SCHEME)
 public class AdminUserController {
 

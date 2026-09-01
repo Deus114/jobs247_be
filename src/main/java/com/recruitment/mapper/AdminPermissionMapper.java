@@ -2,7 +2,7 @@ package com.recruitment.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.recruitment.dto.response.admin.AdminPermissionResponse;
+import com.recruitment.dto.response.admin.permission.AdminPermissionResponse;
 import com.recruitment.entity.AdminPermission;
 
 @Component

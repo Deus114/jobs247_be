@@ -38,6 +38,8 @@ public interface AdminUserRepository extends JpaRepository<AdminUser, Long>, Jpa
 
 	boolean existsByUsernameAndIdNot(String username, Long id);
 
+	boolean existsByRoleId(Long roleId);
+
 	@Query(value = """
 			SELECT u.* FROM admin_users u
 			WHERE u.deleted_at = 1

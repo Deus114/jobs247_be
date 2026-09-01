@@ -12,9 +12,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.recruitment.dto.request.auth.LoginRequest;
-import com.recruitment.dto.request.auth.RefreshRequest;
-import com.recruitment.dto.response.auth.LoginResponse;
+import com.recruitment.dto.request.admin.auth.LoginRequest;
+import com.recruitment.dto.request.admin.auth.RefreshRequest;
+import com.recruitment.dto.response.admin.auth.LoginResponse;
 import com.recruitment.dto.response.common.ApiResponse;
 import com.recruitment.entity.AdminUser;
 import com.recruitment.entity.RefreshToken;

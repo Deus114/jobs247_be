@@ -1,8 +1,8 @@
-package com.recruitment.dto.request.admin;
+package com.recruitment.dto.request.admin.role;
 
-public record AdminUserFilterRequest(
+public record AdminRoleFilterRequest(
 		String keyword,
-		Long roleId,
+		Boolean fullAccess,
 		Boolean active,
 		Boolean deleted) {
 
