@@ -1,46 +1,46 @@
 services:
   mysql:
-  image: mysql:8.4
+    image: mysql:8.4
 
-  container_name: jobs247-mysql
+    container_name: jobs247-mysql
 
-  restart: unless-stopped
+    restart: unless-stopped
 
-  command: --default-time-zone=+07:00
+    command: --default-time-zone=+07:00
 
-  environment:
-    TZ: Asia/Ho_Chi_Minh
+    environment:
+      TZ: Asia/Ho_Chi_Minh
 
-    MYSQL_DATABASE: ${DB_NAME}
-    MYSQL_USER: ${DB_USERNAME}
-    MYSQL_PASSWORD: ${DB_PASSWORD}
-    MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 
-  volumes:
-    - mysql_data:/var/lib/mysql
-
-  networks:
-    - jobs247-network
-
-  healthcheck:
-    test:
-      [
-        "CMD-SHELL",
-        "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD}",
-      ]
-    interval: 10s
-    timeout: 5s
-    retries: 10
+    volumes:
+      - mysql_data:/var/lib/mysql
 
     networks:
       - jobs247-network
 
     healthcheck:
       test:
-        ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${DB_PASSWORD}"]
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
+
+      networks:
+        - jobs247-network
+
+      healthcheck:
+        test:
+          ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${DB_PASSWORD}"]
+        interval: 10s
+        timeout: 5s
+        retries: 10
 
   backend:
     image: YOUR_DOCKERHUB_USERNAME/jobs247-backend:latest
