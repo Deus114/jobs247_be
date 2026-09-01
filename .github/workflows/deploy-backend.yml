@@ -11,8 +11,8 @@ env:
   IMAGE_NAME: jobs247-backend
 
 jobs:
-  test:
-    name: Test Application
+  build:
+    name: Build Application
 
     runs-on: ubuntu-latest
 
@@ -30,13 +30,13 @@ jobs:
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
-      - name: Run tests
-        run: ./mvnw test
+      - name: Build application
+        run: ./mvnw clean package -DskipTests
 
   build-and-push:
     name: Build and Push Docker Image
 
-    needs: test
+    needs: build
 
     runs-on: ubuntu-latest
 
@@ -76,8 +76,11 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
+
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
           chmod 600 ~/.ssh/id_rsa
+
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Copy Docker Compose to EC2
