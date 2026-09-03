@@ -24,13 +24,16 @@ services:
 
     healthcheck:
       test:
-        ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${DB_PASSWORD}"]
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
 
   backend:
-    image: YOUR_DOCKERHUB_USERNAME/jobs247-backend:latest
+    image: ${DOCKERHUB_USERNAME}/jobs247-backend:latest
 
     container_name: jobs247-backend
 

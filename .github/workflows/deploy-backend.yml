@@ -76,11 +76,8 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-
           chmod 600 ~/.ssh/id_rsa
-
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Copy Docker Compose to EC2
@@ -92,20 +89,23 @@ jobs:
 
       - name: Deploy Application
         run: |
-          ssh \
-            -i ~/.ssh/id_rsa \
-            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -i ~/.ssh/id_rsa \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "set -euo pipefail
 
             cd /opt/jobs247
 
-            docker compose \
-              -f docker-compose.prod.yml \
-              pull
+            if [ ! -f .env ]; then
+              echo 'Missing /opt/jobs247/.env on EC2'
+              exit 1
+            fi
 
-            docker compose \
-              -f docker-compose.prod.yml \
-              up -d --remove-orphans
+            echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin
 
+            export DOCKERHUB_USERNAME='${{ secrets.DOCKERHUB_USERNAME }}'
+
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml ps
             docker image prune -f
-
-          EOF
+            "
