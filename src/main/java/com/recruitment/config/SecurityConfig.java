@@ -64,7 +64,8 @@ public class SecurityConfig {
 			Constants.SWAGGER_UI,
 			Constants.SWAGGER_UI_HTML,
 			Constants.ADMIN_AUTH_LOGIN_PATH,
-			Constants.ADMIN_AUTH_REFRESH_PATH
+			Constants.ADMIN_AUTH_REFRESH_PATH,
+			Constants.BUSINESS_CONFIG_PUBLIC_PATH
 	};
 
 	@Bean
@@ -122,7 +123,8 @@ public class SecurityConfig {
 	private boolean isPublicAuthPath(HttpServletRequest request) {
 		String path = request.getRequestURI();
 		return Constants.ADMIN_AUTH_LOGIN_PATH.equals(path)
-				|| Constants.ADMIN_AUTH_REFRESH_PATH.equals(path);
+				|| Constants.ADMIN_AUTH_REFRESH_PATH.equals(path)
+				|| Constants.BUSINESS_CONFIG_PUBLIC_PATH.equals(path);
 	}
 
 	@Bean

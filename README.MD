@@ -1,5 +1,8 @@
 ﻿# Recruitment
 
+# Deploy
+http://3.1.196.187/swagger-ui/index.html
+
 - Java 25
 - Spring Boot 4
 - Spring Security + JWT (OAuth2 Resource Server)

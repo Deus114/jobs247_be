@@ -37,10 +37,12 @@ public class AdminRbacSeeder implements CommandLineRunner {
 	private static final String MODULE_ADMIN_USER = "admin-user";
 	private static final String MODULE_ADMIN_ROLE = "admin-role";
 	private static final String MODULE_ADMIN_PERMISSION = "admin-permission";
+	private static final String MODULE_BUSINESS_CONFIG = "business-config";
 	private static final Set<String> MANAGED_MODULES = Set.of(
 			MODULE_ADMIN_USER,
 			MODULE_ADMIN_ROLE,
-			MODULE_ADMIN_PERMISSION);
+			MODULE_ADMIN_PERMISSION,
+			MODULE_BUSINESS_CONFIG);
 
 	private final AdminRoleRepository adminRoleRepository;
 	private final AdminUserRepository adminUserRepository;
@@ -82,6 +84,7 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		seeds.addAll(adminUserPermissionSeeds());
 		seeds.addAll(adminRolePermissionSeeds());
 		seeds.addAll(adminPermissionPermissionSeeds());
+		seeds.addAll(businessConfigPermissionSeeds());
 
 		Set<String> seedKeys = new HashSet<>();
 		int created = 0;
@@ -176,6 +179,15 @@ public class AdminRbacSeeder implements CommandLineRunner {
 				new PermissionSeed("PERMANENT_DELETE_ADMIN_PERMISSION", "Xóa vĩnh viễn quyền", MODULE_ADMIN_PERMISSION,
 						"DELETE",
 						Constants.ADMIN_PERMISSIONS_BASE_PATH + "/{id}/permanent"));
+	}
+
+	private List<PermissionSeed> businessConfigPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_BUSINESS_CONFIG", "Xem cấu hình doanh nghiệp", MODULE_BUSINESS_CONFIG, "GET",
+						Constants.ADMIN_BUSINESS_CONFIG_BASE_PATH),
+				new PermissionSeed("UPDATE_BUSINESS_CONFIG", "Cập nhật cấu hình doanh nghiệp", MODULE_BUSINESS_CONFIG,
+						"PUT",
+						Constants.ADMIN_BUSINESS_CONFIG_BASE_PATH));
 	}
 
 	private boolean applySeed(AdminPermission permission, PermissionSeed seed) {

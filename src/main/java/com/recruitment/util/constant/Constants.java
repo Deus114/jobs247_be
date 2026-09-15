@@ -22,6 +22,12 @@ public final class Constants {
 
 	public static final String ADMIN_PERMISSIONS_BASE_PATH = "/api/v1/admin/permissions";
 
+	// --- Business Config API ---
+
+	public static final String BUSINESS_CONFIG_PUBLIC_PATH = "/api/v1/business-config";
+	public static final String ADMIN_BUSINESS_CONFIG_BASE_PATH = "/api/v1/admin/business-config";
+	public static final long BUSINESS_CONFIG_ID = 1L;
+
 	public static final String ADMIN_API_PATTERN = "/api/v1/admin/**";
 
 	// --- Admin Auth Cookie ---

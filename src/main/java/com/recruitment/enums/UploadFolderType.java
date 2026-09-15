@@ -2,7 +2,12 @@ package com.recruitment.enums;
 
 public enum UploadFolderType {
 
-	ADMIN_AVATAR("admin-avatars");
+	ADMIN_AVATAR("admin-avatars"),
+	LOGO("logos"),
+	HOME_BANNER("home-banners"),
+	USER_LOGIN_BACKGROUND("user-login-backgrounds"),
+	ADMIN_LOGIN_BACKGROUND("admin-login-backgrounds"),
+	USER_REGISTER_BANNER("user-register-banners");
 
 	private final String folder;
 

@@ -124,7 +124,21 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MultipartException.class)
 	public ResponseEntity<ApiResponse<Void>> handleMultipart(MultipartException ex) {
-		log.warn("MultipartException: {}", ex.getMessage());
+		log.warn("MultipartException: {}", ex.getMessage(), ex);
+		Throwable cause = ex.getCause();
+		while (cause != null) {
+			String name = cause.getClass().getSimpleName();
+			if (cause instanceof MaxUploadSizeExceededException
+					|| name.contains("SizeLimitExceeded")) {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(ApiResponse.badRequest(messageService.get("error.file.too-large", 10)));
+			}
+			if (name.contains("FileCountLimitExceeded") || name.contains("MaxPart")) {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(ApiResponse.badRequest(messageService.get("error.file.multipart-invalid")));
+			}
+			cause = cause.getCause();
+		}
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(ApiResponse.badRequest(messageService.get("error.file.multipart-invalid")));
 	}

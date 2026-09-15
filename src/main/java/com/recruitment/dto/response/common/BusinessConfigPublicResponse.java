@@ -1,0 +1,31 @@
+package com.recruitment.dto.response.common;
+
+public record BusinessConfigPublicResponse(
+		Long id,
+		String siteName,
+		String tagline,
+		String email,
+		String phone,
+		String address,
+		String taxCode,
+		Double latitude,
+		Double longitude,
+		String logo,
+		String homeBanner,
+		String userLoginBackground,
+		String userRegisterBanner,
+		String footerAbout,
+		String footerCopyright,
+		String footerAddress,
+		String footerPhone,
+		String footerEmail,
+		String privacyPolicy,
+		String termsOfService,
+		String facebookUrl,
+		String linkedinUrl,
+		String twitterUrl,
+		String youtubeUrl,
+		String metaTitle,
+		String metaDescription,
+		String metaKeywords) {
+}

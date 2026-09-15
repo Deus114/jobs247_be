@@ -26,6 +26,9 @@ uploads
 .env
 .env.local
 
+### Cursor rules (local) ###
+.cursor/rules/
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
