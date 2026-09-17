@@ -1,5 +1,7 @@
 package com.recruitment.dto.request.admin.role;
 
+import com.recruitment.util.helper.AccentHelper;
+
 public record AdminRoleFilterRequest(
 		String keyword,
 		Boolean fullAccess,
@@ -11,9 +13,6 @@ public record AdminRoleFilterRequest(
 	}
 
 	public String normalizedKeyword() {
-		if (keyword == null || keyword.isBlank()) {
-			return null;
-		}
-		return keyword.trim();
+		return AccentHelper.normalizeForSearch(keyword);
 	}
 }

@@ -28,6 +28,17 @@ public final class Constants {
 	public static final String ADMIN_BUSINESS_CONFIG_BASE_PATH = "/api/v1/admin/business-config";
 	public static final long BUSINESS_CONFIG_ID = 1L;
 
+	// --- Industry Group / Industry API ---
+
+	public static final String INDUSTRY_GROUPS_PUBLIC_PATH = "/api/v1/industry-groups";
+	public static final String ADMIN_INDUSTRY_GROUPS_BASE_PATH = "/api/v1/admin/industry-groups";
+	public static final String ADMIN_INDUSTRIES_BASE_PATH = "/api/v1/admin/industries";
+
+	// --- Province API ---
+
+	public static final String PROVINCES_PUBLIC_PATH = "/api/v1/provinces";
+	public static final String ADMIN_PROVINCES_BASE_PATH = "/api/v1/admin/provinces";
+
 	public static final String ADMIN_API_PATTERN = "/api/v1/admin/**";
 
 	// --- Admin Auth Cookie ---

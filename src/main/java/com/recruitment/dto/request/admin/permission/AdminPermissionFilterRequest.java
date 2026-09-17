@@ -1,6 +1,7 @@
 package com.recruitment.dto.request.admin.permission;
 
 import com.recruitment.enums.PermissionTypeEnum;
+import com.recruitment.util.helper.AccentHelper;
 
 public record AdminPermissionFilterRequest(
 		String keyword,
@@ -15,10 +16,7 @@ public record AdminPermissionFilterRequest(
 	}
 
 	public String normalizedKeyword() {
-		if (keyword == null || keyword.isBlank()) {
-			return null;
-		}
-		return keyword.trim();
+		return AccentHelper.normalizeForSearch(keyword);
 	}
 
 	public String normalizedModule() {

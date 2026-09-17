@@ -31,9 +31,8 @@ import com.recruitment.security.PermissionAuthorizationManager;
 import com.recruitment.service.MessageService;
 import com.recruitment.util.constant.Constants;
 
-import tools.jackson.databind.json.JsonMapper;
-
 import jakarta.servlet.http.HttpServletRequest;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @EnableWebSecurity
@@ -65,7 +64,9 @@ public class SecurityConfig {
 			Constants.SWAGGER_UI_HTML,
 			Constants.ADMIN_AUTH_LOGIN_PATH,
 			Constants.ADMIN_AUTH_REFRESH_PATH,
-			Constants.BUSINESS_CONFIG_PUBLIC_PATH
+			Constants.BUSINESS_CONFIG_PUBLIC_PATH,
+			Constants.INDUSTRY_GROUPS_PUBLIC_PATH,
+			Constants.PROVINCES_PUBLIC_PATH
 	};
 
 	@Bean
@@ -124,7 +125,9 @@ public class SecurityConfig {
 		String path = request.getRequestURI();
 		return Constants.ADMIN_AUTH_LOGIN_PATH.equals(path)
 				|| Constants.ADMIN_AUTH_REFRESH_PATH.equals(path)
-				|| Constants.BUSINESS_CONFIG_PUBLIC_PATH.equals(path);
+				|| Constants.BUSINESS_CONFIG_PUBLIC_PATH.equals(path)
+				|| Constants.INDUSTRY_GROUPS_PUBLIC_PATH.equals(path)
+				|| Constants.PROVINCES_PUBLIC_PATH.equals(path);
 	}
 
 	@Bean

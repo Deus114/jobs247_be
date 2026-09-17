@@ -3,8 +3,6 @@ package com.recruitment.repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,36 +26,6 @@ public interface AdminRoleRepository extends JpaRepository<AdminRole, Long>, Jpa
 
 	@Query("SELECT DISTINCT r FROM AdminRole r LEFT JOIN FETCH r.permissions")
 	List<AdminRole> findAllWithPermissions();
-
-	@Query(value = """
-			SELECT r.* FROM admin_roles r
-			WHERE r.deleted_at = 1
-			AND (
-				:keyword IS NULL
-				OR LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-				OR LOWER(IFNULL(r.description, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			)
-			AND (:fullAccess IS NULL OR r.full_access = :fullAccess)
-			AND (:active IS NULL OR r.active = :active)
-			ORDER BY r.created_at DESC
-			""",
-			countQuery = """
-			SELECT COUNT(*) FROM admin_roles r
-			WHERE r.deleted_at = 1
-			AND (
-				:keyword IS NULL
-				OR LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-				OR LOWER(IFNULL(r.description, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			)
-			AND (:fullAccess IS NULL OR r.full_access = :fullAccess)
-			AND (:active IS NULL OR r.active = :active)
-			""",
-			nativeQuery = true)
-	Page<AdminRole> findAllSoftDeleted(
-			@Param("keyword") String keyword,
-			@Param("fullAccess") Boolean fullAccess,
-			@Param("active") Boolean active,
-			Pageable pageable);
 
 	@Query(value = "SELECT * FROM admin_roles WHERE id = :id AND deleted_at = 1", nativeQuery = true)
 	Optional<AdminRole> findSoftDeletedById(@Param("id") Long id);

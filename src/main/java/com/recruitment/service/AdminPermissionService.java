@@ -25,6 +25,7 @@ import com.recruitment.mapper.AdminPermissionMapper;
 import com.recruitment.repository.AdminPermissionRepository;
 import com.recruitment.security.PermissionAuthorizationManager;
 import com.recruitment.specification.AdminPermissionSpecification;
+import com.recruitment.util.helper.SoftDeletedPageQuery;
 
 @Service
 public class AdminPermissionService {
@@ -33,16 +34,19 @@ public class AdminPermissionService {
 	private final AdminPermissionMapper adminPermissionMapper;
 	private final MessageService messageService;
 	private final PermissionAuthorizationManager permissionAuthorizationManager;
+	private final SoftDeletedPageQuery softDeletedPageQuery;
 
 	public AdminPermissionService(
 			AdminPermissionRepository adminPermissionRepository,
 			AdminPermissionMapper adminPermissionMapper,
 			MessageService messageService,
-			PermissionAuthorizationManager permissionAuthorizationManager) {
+			PermissionAuthorizationManager permissionAuthorizationManager,
+			SoftDeletedPageQuery softDeletedPageQuery) {
 		this.adminPermissionRepository = adminPermissionRepository;
 		this.adminPermissionMapper = adminPermissionMapper;
 		this.messageService = messageService;
 		this.permissionAuthorizationManager = permissionAuthorizationManager;
+		this.softDeletedPageQuery = softDeletedPageQuery;
 	}
 
 	public ResponseEntity<ApiResponse<PaginatedResponse<AdminPermissionResponse>>> getList(
@@ -50,16 +54,26 @@ public class AdminPermissionService {
 			Pageable pageable) {
 
 		Page<AdminPermissionResponse> resultPage = filter.isDeleted()
-				? adminPermissionRepository.findAllSoftDeleted(
+				? softDeletedPageQuery.find(
+						AdminPermission.class,
+						"admin_permissions p",
+						"p",
+						List.of("p.name", "p.description", "p.path"),
 						filter.normalizedKeyword(),
-						filter.normalizedModule(),
-						filter.normalizedMethod(),
-						filter.type() == null ? null : filter.type().name(),
-						filter.active(),
-						toNativePageable(pageable))
-						.map(permission -> adminPermissionMapper.toResponse(permission))
+						"AND (:module IS NULL OR p.module = :module) "
+								+ "AND (:method IS NULL OR p.method = :method) "
+								+ "AND (:type IS NULL OR p.type = :type) "
+								+ "AND (:active IS NULL OR p.active = :active)",
+						SoftDeletedPageQuery.params(
+								"module", filter.normalizedModule(),
+								"method", filter.normalizedMethod(),
+								"type", filter.type() == null ? null : filter.type().name(),
+								"active", filter.active()),
+						"p.created_at DESC",
+						pageable)
+						.map(adminPermissionMapper::toResponse)
 				: adminPermissionRepository.findAll(AdminPermissionSpecification.build(filter), pageable)
-						.map(permission -> adminPermissionMapper.toResponse(permission));
+						.map(adminPermissionMapper::toResponse);
 
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("admin-permission.list.success"),
@@ -212,9 +226,5 @@ public class AdminPermissionService {
 			return null;
 		}
 		return value.trim();
-	}
-
-	private Pageable toNativePageable(Pageable pageable) {
-		return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
 	}
 }

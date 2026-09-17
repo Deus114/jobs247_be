@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.recruitment.dto.request.admin.permission.AdminPermissionFilterRequest;
 import com.recruitment.entity.AdminPermission;
+import com.recruitment.util.helper.SearchHelper;
 
 public final class AdminPermissionSpecification {
 
@@ -18,15 +19,10 @@ public final class AdminPermissionSpecification {
 
 			String keyword = filter.normalizedKeyword();
 			if (keyword != null) {
-				String pattern = "%" + keyword.toLowerCase() + "%";
-				Predicate nameLike = criteriaBuilder.like(
-						criteriaBuilder.lower(root.get("name")), pattern);
-				Predicate descriptionLike = criteriaBuilder.like(
-						criteriaBuilder.lower(root.get("description")), pattern);
-				Predicate pathLike = criteriaBuilder.like(
-						criteriaBuilder.lower(root.get("path")), pattern);
-				predicate = criteriaBuilder.and(predicate,
-						criteriaBuilder.or(nameLike, descriptionLike, pathLike));
+				predicate = criteriaBuilder.and(predicate, criteriaBuilder.or(
+						SearchHelper.likeUnaccent(criteriaBuilder, root.get("name"), keyword),
+						SearchHelper.likeUnaccentNullable(criteriaBuilder, root.get("description"), keyword),
+						SearchHelper.likeUnaccent(criteriaBuilder, root.get("path"), keyword)));
 			}
 
 			String module = filter.normalizedModule();

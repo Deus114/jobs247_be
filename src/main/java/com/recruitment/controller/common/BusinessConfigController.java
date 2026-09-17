@@ -1,4 +1,4 @@
-package com.recruitment.controller;
+package com.recruitment.controller.common;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

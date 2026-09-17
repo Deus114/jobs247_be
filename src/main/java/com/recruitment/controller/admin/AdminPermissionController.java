@@ -1,4 +1,4 @@
-package com.recruitment.controller;
+package com.recruitment.controller.admin;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -55,7 +55,9 @@ public class AdminPermissionController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<AdminPermissionResponse>> getById(@PathVariable Long id) {
+	public ResponseEntity<ApiResponse<AdminPermissionResponse>> getById(
+			@PathVariable
+			Long id) {
 		return adminPermissionService.getById(id);
 	}
 
@@ -104,7 +106,9 @@ public class AdminPermissionController {
 	}
 
 	@DeleteMapping("/{id}/permanent")
-	public ResponseEntity<ApiResponse<Void>> permanentDelete(@PathVariable Long id) {
+	public ResponseEntity<ApiResponse<Void>> permanentDelete(
+			@PathVariable
+			Long id) {
 		return adminPermissionService.permanentDelete(id);
 	}
 }

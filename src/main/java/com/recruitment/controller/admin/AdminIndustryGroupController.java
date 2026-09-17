@@ -1,4 +1,4 @@
-package com.recruitment.controller;
+package com.recruitment.controller.admin;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -19,14 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.recruitment.config.OpenAPIConfig;
-import com.recruitment.dto.request.admin.user.AdminUserFilterRequest;
-import com.recruitment.dto.request.admin.user.CreateAdminUserRequest;
-import com.recruitment.dto.request.admin.user.UpdateAdminUserRequest;
-import com.recruitment.dto.request.admin.user.UpdateMeRequest;
-import com.recruitment.dto.response.admin.user.AdminUserResponse;
+import com.recruitment.dto.request.admin.industrygroup.CreateIndustryGroupRequest;
+import com.recruitment.dto.request.admin.industrygroup.IndustryGroupFilterRequest;
+import com.recruitment.dto.request.admin.industrygroup.UpdateIndustryGroupRequest;
+import com.recruitment.dto.response.admin.industrygroup.IndustryGroupResponse;
 import com.recruitment.dto.response.common.ApiResponse;
 import com.recruitment.dto.response.common.PaginatedResponse;
-import com.recruitment.service.AdminUserService;
+import com.recruitment.service.IndustryGroupService;
 import com.recruitment.util.constant.Constants;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,86 +36,62 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping(Constants.ADMIN_USERS_BASE_PATH)
-@Tag(name = "Admin User")
+@RequestMapping(Constants.ADMIN_INDUSTRY_GROUPS_BASE_PATH)
+@Tag(name = "Admin Industry Group")
 @SecurityRequirement(name = OpenAPIConfig.BEARER_AUTH_SCHEME)
-public class AdminUserController {
+public class AdminIndustryGroupController {
 
-	private final AdminUserService adminUserService;
+	private final IndustryGroupService industryGroupService;
 
-	public AdminUserController(AdminUserService adminUserService) {
-		this.adminUserService = adminUserService;
+	public AdminIndustryGroupController(IndustryGroupService industryGroupService) {
+		this.industryGroupService = industryGroupService;
 	}
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<PaginatedResponse<AdminUserResponse>>> getList(
+	public ResponseEntity<ApiResponse<PaginatedResponse<IndustryGroupResponse>>> getList(
 			@ParameterObject
-			AdminUserFilterRequest filter,
+			IndustryGroupFilterRequest filter,
 			@ParameterObject
-			@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+			@PageableDefault(size = 10, sort = "sortOrder", direction = Sort.Direction.ASC)
 			Pageable pageable) {
-		return adminUserService.getList(filter, pageable);
-	}
-
-	@GetMapping("/me")
-	public ResponseEntity<ApiResponse<AdminUserResponse>> getMe(
-			@Parameter(hidden = true)
-			@AuthenticationPrincipal
-			Jwt jwt) {
-		return adminUserService.getMe(jwt.getSubject());
-	}
-
-	@PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-			content = @Content(
-					mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-					schema = @Schema(implementation = UpdateMeRequest.class)))
-	public ResponseEntity<ApiResponse<AdminUserResponse>> updateMe(
-			@Valid
-			@ModelAttribute
-			UpdateMeRequest request,
-			@Parameter(hidden = true)
-			@AuthenticationPrincipal
-			Jwt jwt) {
-		return adminUserService.updateMe(jwt.getSubject(), request);
+		return industryGroupService.getList(filter, pageable);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<AdminUserResponse>> getById(@PathVariable
-	Long id) {
-		return adminUserService.getById(id);
+	public ResponseEntity<ApiResponse<IndustryGroupResponse>> getById(@PathVariable Long id) {
+		return industryGroupService.getById(id);
 	}
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
 			content = @Content(
 					mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-					schema = @Schema(implementation = CreateAdminUserRequest.class)))
-	public ResponseEntity<ApiResponse<AdminUserResponse>> create(
+					schema = @Schema(implementation = CreateIndustryGroupRequest.class)))
+	public ResponseEntity<ApiResponse<IndustryGroupResponse>> create(
 			@Valid
 			@ModelAttribute
-			CreateAdminUserRequest request,
+			CreateIndustryGroupRequest request,
 			@Parameter(hidden = true)
 			@AuthenticationPrincipal
 			Jwt jwt) {
-		return adminUserService.create(request, jwt.getSubject());
+		return industryGroupService.create(request, jwt.getSubject());
 	}
 
 	@PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
 			content = @Content(
 					mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-					schema = @Schema(implementation = UpdateAdminUserRequest.class)))
-	public ResponseEntity<ApiResponse<AdminUserResponse>> update(
+					schema = @Schema(implementation = UpdateIndustryGroupRequest.class)))
+	public ResponseEntity<ApiResponse<IndustryGroupResponse>> update(
 			@PathVariable
 			Long id,
 			@Valid
 			@ModelAttribute
-			UpdateAdminUserRequest request,
+			UpdateIndustryGroupRequest request,
 			@Parameter(hidden = true)
 			@AuthenticationPrincipal
 			Jwt jwt) {
-		return adminUserService.update(id, request, jwt.getSubject());
+		return industryGroupService.update(id, request, jwt.getSubject());
 	}
 
 	@DeleteMapping("/{id}")
@@ -126,7 +101,7 @@ public class AdminUserController {
 			@Parameter(hidden = true)
 			@AuthenticationPrincipal
 			Jwt jwt) {
-		return adminUserService.softDelete(id, jwt.getSubject());
+		return industryGroupService.softDelete(id, jwt.getSubject());
 	}
 
 	@PatchMapping("/{id}/restore")
@@ -136,12 +111,11 @@ public class AdminUserController {
 			@Parameter(hidden = true)
 			@AuthenticationPrincipal
 			Jwt jwt) {
-		return adminUserService.restore(id, jwt.getSubject());
+		return industryGroupService.restore(id, jwt.getSubject());
 	}
 
 	@DeleteMapping("/{id}/permanent")
-	public ResponseEntity<ApiResponse<Void>> permanentDelete(@PathVariable
-	Long id) {
-		return adminUserService.permanentDelete(id);
+	public ResponseEntity<ApiResponse<Void>> permanentDelete(@PathVariable Long id) {
+		return industryGroupService.permanentDelete(id);
 	}
 }

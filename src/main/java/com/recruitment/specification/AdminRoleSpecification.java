@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.recruitment.dto.request.admin.role.AdminRoleFilterRequest;
 import com.recruitment.entity.AdminRole;
+import com.recruitment.util.helper.SearchHelper;
 
 public final class AdminRoleSpecification {
 
@@ -18,12 +19,9 @@ public final class AdminRoleSpecification {
 
 			String keyword = filter.normalizedKeyword();
 			if (keyword != null) {
-				String pattern = "%" + keyword.toLowerCase() + "%";
-				Predicate nameLike = criteriaBuilder.like(
-						criteriaBuilder.lower(root.get("name")), pattern);
-				Predicate descriptionLike = criteriaBuilder.like(
-						criteriaBuilder.lower(root.get("description")), pattern);
-				predicate = criteriaBuilder.and(predicate, criteriaBuilder.or(nameLike, descriptionLike));
+				predicate = criteriaBuilder.and(predicate, criteriaBuilder.or(
+						SearchHelper.likeUnaccent(criteriaBuilder, root.get("name"), keyword),
+						SearchHelper.likeUnaccentNullable(criteriaBuilder, root.get("description"), keyword)));
 			}
 
 			if (filter.fullAccess() != null) {

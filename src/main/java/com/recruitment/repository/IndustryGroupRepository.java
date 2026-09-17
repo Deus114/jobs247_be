@@ -1,0 +1,29 @@
+package com.recruitment.repository;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.recruitment.entity.IndustryGroup;
+
+@Repository
+public interface IndustryGroupRepository
+		extends JpaRepository<IndustryGroup, Long>, JpaSpecificationExecutor<IndustryGroup> {
+
+	@Query(value = "SELECT * FROM industry_groups WHERE id = :id AND deleted_at = 1", nativeQuery = true)
+	Optional<IndustryGroup> findSoftDeletedById(@Param("id") Long id);
+
+	@Modifying
+	@Query(value = "UPDATE industry_groups SET deleted_at = 0, deleted_by = NULL WHERE id = :id AND deleted_at = 1",
+			nativeQuery = true)
+	int restoreById(@Param("id") Long id);
+
+	@Modifying
+	@Query(value = "DELETE FROM industry_groups WHERE id = :id", nativeQuery = true)
+	void hardDeleteById(@Param("id") Long id);
+}

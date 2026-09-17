@@ -1,4 +1,4 @@
-package com.recruitment.controller;
+package com.recruitment.controller.admin;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

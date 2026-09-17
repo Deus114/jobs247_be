@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +31,7 @@ import com.recruitment.repository.AdminRoleRepository;
 import com.recruitment.repository.AdminUserRepository;
 import com.recruitment.security.PermissionAuthorizationManager;
 import com.recruitment.specification.AdminRoleSpecification;
+import com.recruitment.util.helper.SoftDeletedPageQuery;
 
 @Service
 public class AdminRoleService {
@@ -42,6 +42,7 @@ public class AdminRoleService {
 	private final AdminRoleMapper adminRoleMapper;
 	private final MessageService messageService;
 	private final PermissionAuthorizationManager permissionAuthorizationManager;
+	private final SoftDeletedPageQuery softDeletedPageQuery;
 
 	public AdminRoleService(
 			AdminRoleRepository adminRoleRepository,
@@ -49,13 +50,15 @@ public class AdminRoleService {
 			AdminUserRepository adminUserRepository,
 			AdminRoleMapper adminRoleMapper,
 			MessageService messageService,
-			PermissionAuthorizationManager permissionAuthorizationManager) {
+			PermissionAuthorizationManager permissionAuthorizationManager,
+			SoftDeletedPageQuery softDeletedPageQuery) {
 		this.adminRoleRepository = adminRoleRepository;
 		this.adminPermissionRepository = adminPermissionRepository;
 		this.adminUserRepository = adminUserRepository;
 		this.adminRoleMapper = adminRoleMapper;
 		this.messageService = messageService;
 		this.permissionAuthorizationManager = permissionAuthorizationManager;
+		this.softDeletedPageQuery = softDeletedPageQuery;
 	}
 
 	public ResponseEntity<ApiResponse<PaginatedResponse<AdminRoleResponse>>> getList(
@@ -63,14 +66,22 @@ public class AdminRoleService {
 			Pageable pageable) {
 
 		Page<AdminRoleResponse> resultPage = filter.isDeleted()
-				? adminRoleRepository.findAllSoftDeleted(
+				? softDeletedPageQuery.find(
+						AdminRole.class,
+						"admin_roles r",
+						"r",
+						List.of("r.name", "r.description"),
 						filter.normalizedKeyword(),
-						filter.fullAccess(),
-						filter.active(),
-						toNativePageable(pageable))
-						.map(role -> adminRoleMapper.toResponse(role))
+						"AND (:fullAccess IS NULL OR r.full_access = :fullAccess) "
+								+ "AND (:active IS NULL OR r.active = :active)",
+						SoftDeletedPageQuery.params(
+								"fullAccess", filter.fullAccess(),
+								"active", filter.active()),
+						"r.created_at DESC",
+						pageable)
+						.map(adminRoleMapper::toResponse)
 				: adminRoleRepository.findAll(AdminRoleSpecification.build(filter), pageable)
-						.map(role -> adminRoleMapper.toResponse(role));
+						.map(adminRoleMapper::toResponse);
 
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("admin-role.list.success"),
@@ -243,9 +254,5 @@ public class AdminRoleService {
 			return null;
 		}
 		return value.trim();
-	}
-
-	private Pageable toNativePageable(Pageable pageable) {
-		return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
 	}
 }

@@ -38,11 +38,17 @@ public class AdminRbacSeeder implements CommandLineRunner {
 	private static final String MODULE_ADMIN_ROLE = "admin-role";
 	private static final String MODULE_ADMIN_PERMISSION = "admin-permission";
 	private static final String MODULE_BUSINESS_CONFIG = "business-config";
+	private static final String MODULE_INDUSTRY_GROUP = "industry-group";
+	private static final String MODULE_INDUSTRY = "industry";
+	private static final String MODULE_PROVINCE = "province";
 	private static final Set<String> MANAGED_MODULES = Set.of(
 			MODULE_ADMIN_USER,
 			MODULE_ADMIN_ROLE,
 			MODULE_ADMIN_PERMISSION,
-			MODULE_BUSINESS_CONFIG);
+			MODULE_BUSINESS_CONFIG,
+			MODULE_INDUSTRY_GROUP,
+			MODULE_INDUSTRY,
+			MODULE_PROVINCE);
 
 	private final AdminRoleRepository adminRoleRepository;
 	private final AdminUserRepository adminUserRepository;
@@ -85,6 +91,9 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		seeds.addAll(adminRolePermissionSeeds());
 		seeds.addAll(adminPermissionPermissionSeeds());
 		seeds.addAll(businessConfigPermissionSeeds());
+		seeds.addAll(industryGroupPermissionSeeds());
+		seeds.addAll(industryPermissionSeeds());
+		seeds.addAll(provincePermissionSeeds());
 
 		Set<String> seedKeys = new HashSet<>();
 		int created = 0;
@@ -188,6 +197,64 @@ public class AdminRbacSeeder implements CommandLineRunner {
 				new PermissionSeed("UPDATE_BUSINESS_CONFIG", "Cập nhật cấu hình doanh nghiệp", MODULE_BUSINESS_CONFIG,
 						"PUT",
 						Constants.ADMIN_BUSINESS_CONFIG_BASE_PATH));
+	}
+
+	private List<PermissionSeed> industryGroupPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_INDUSTRY_GROUPS", "Xem danh sách nhóm ngành nghề", MODULE_INDUSTRY_GROUP,
+						"GET",
+						Constants.ADMIN_INDUSTRY_GROUPS_BASE_PATH),
+				new PermissionSeed("VIEW_INDUSTRY_GROUP", "Xem chi tiết nhóm ngành nghề", MODULE_INDUSTRY_GROUP, "GET",
+						Constants.ADMIN_INDUSTRY_GROUPS_BASE_PATH + "/{id}"),
+				new PermissionSeed("CREATE_INDUSTRY_GROUP", "Tạo nhóm ngành nghề", MODULE_INDUSTRY_GROUP, "POST",
+						Constants.ADMIN_INDUSTRY_GROUPS_BASE_PATH),
+				new PermissionSeed("UPDATE_INDUSTRY_GROUP", "Cập nhật nhóm ngành nghề", MODULE_INDUSTRY_GROUP, "PUT",
+						Constants.ADMIN_INDUSTRY_GROUPS_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_INDUSTRY_GROUP", "Xóa mềm nhóm ngành nghề", MODULE_INDUSTRY_GROUP, "DELETE",
+						Constants.ADMIN_INDUSTRY_GROUPS_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_INDUSTRY_GROUP", "Khôi phục nhóm ngành nghề", MODULE_INDUSTRY_GROUP,
+						"PATCH",
+						Constants.ADMIN_INDUSTRY_GROUPS_BASE_PATH + "/{id}/restore"),
+				new PermissionSeed("PERMANENT_DELETE_INDUSTRY_GROUP", "Xóa vĩnh viễn nhóm ngành nghề",
+						MODULE_INDUSTRY_GROUP, "DELETE",
+						Constants.ADMIN_INDUSTRY_GROUPS_BASE_PATH + "/{id}/permanent"));
+	}
+
+	private List<PermissionSeed> industryPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_INDUSTRIES", "Xem danh sách ngành nghề", MODULE_INDUSTRY, "GET",
+						Constants.ADMIN_INDUSTRIES_BASE_PATH),
+				new PermissionSeed("VIEW_INDUSTRY", "Xem chi tiết ngành nghề", MODULE_INDUSTRY, "GET",
+						Constants.ADMIN_INDUSTRIES_BASE_PATH + "/{id}"),
+				new PermissionSeed("CREATE_INDUSTRY", "Tạo ngành nghề", MODULE_INDUSTRY, "POST",
+						Constants.ADMIN_INDUSTRIES_BASE_PATH),
+				new PermissionSeed("UPDATE_INDUSTRY", "Cập nhật ngành nghề", MODULE_INDUSTRY, "PUT",
+						Constants.ADMIN_INDUSTRIES_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_INDUSTRY", "Xóa mềm ngành nghề", MODULE_INDUSTRY, "DELETE",
+						Constants.ADMIN_INDUSTRIES_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_INDUSTRY", "Khôi phục ngành nghề", MODULE_INDUSTRY, "PATCH",
+						Constants.ADMIN_INDUSTRIES_BASE_PATH + "/{id}/restore"),
+				new PermissionSeed("PERMANENT_DELETE_INDUSTRY", "Xóa vĩnh viễn ngành nghề", MODULE_INDUSTRY, "DELETE",
+						Constants.ADMIN_INDUSTRIES_BASE_PATH + "/{id}/permanent"));
+	}
+
+	private List<PermissionSeed> provincePermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_PROVINCES", "Xem danh sách tỉnh thành phố", MODULE_PROVINCE, "GET",
+						Constants.ADMIN_PROVINCES_BASE_PATH),
+				new PermissionSeed("VIEW_PROVINCE", "Xem chi tiết tỉnh thành phố", MODULE_PROVINCE, "GET",
+						Constants.ADMIN_PROVINCES_BASE_PATH + "/{id}"),
+				new PermissionSeed("CREATE_PROVINCE", "Tạo tỉnh thành phố", MODULE_PROVINCE, "POST",
+						Constants.ADMIN_PROVINCES_BASE_PATH),
+				new PermissionSeed("UPDATE_PROVINCE", "Cập nhật tỉnh thành phố", MODULE_PROVINCE, "PUT",
+						Constants.ADMIN_PROVINCES_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_PROVINCE", "Xóa mềm tỉnh thành phố", MODULE_PROVINCE, "DELETE",
+						Constants.ADMIN_PROVINCES_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_PROVINCE", "Khôi phục tỉnh thành phố", MODULE_PROVINCE, "PATCH",
+						Constants.ADMIN_PROVINCES_BASE_PATH + "/{id}/restore"),
+				new PermissionSeed("PERMANENT_DELETE_PROVINCE", "Xóa vĩnh viễn tỉnh thành phố", MODULE_PROVINCE,
+						"DELETE",
+						Constants.ADMIN_PROVINCES_BASE_PATH + "/{id}/permanent"));
 	}
 
 	private boolean applySeed(AdminPermission permission, PermissionSeed seed) {

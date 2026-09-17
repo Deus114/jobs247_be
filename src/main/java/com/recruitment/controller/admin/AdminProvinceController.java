@@ -1,4 +1,4 @@
-package com.recruitment.controller;
+package com.recruitment.controller.admin;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.recruitment.config.OpenAPIConfig;
-import com.recruitment.dto.request.admin.role.AdminRoleFilterRequest;
-import com.recruitment.dto.request.admin.role.CreateAdminRoleRequest;
-import com.recruitment.dto.request.admin.role.UpdateAdminRoleRequest;
-import com.recruitment.dto.response.admin.role.AdminRoleResponse;
+import com.recruitment.dto.request.admin.province.CreateProvinceRequest;
+import com.recruitment.dto.request.admin.province.ProvinceFilterRequest;
+import com.recruitment.dto.request.admin.province.UpdateProvinceRequest;
+import com.recruitment.dto.response.admin.province.ProvinceResponse;
 import com.recruitment.dto.response.common.ApiResponse;
 import com.recruitment.dto.response.common.PaginatedResponse;
-import com.recruitment.service.AdminRoleService;
+import com.recruitment.service.ProvinceService;
 import com.recruitment.util.constant.Constants;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,54 +33,54 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping(Constants.ADMIN_ROLES_BASE_PATH)
-@Tag(name = "Admin Role")
+@RequestMapping(Constants.ADMIN_PROVINCES_BASE_PATH)
+@Tag(name = "Admin Province")
 @SecurityRequirement(name = OpenAPIConfig.BEARER_AUTH_SCHEME)
-public class AdminRoleController {
+public class AdminProvinceController {
 
-	private final AdminRoleService adminRoleService;
+	private final ProvinceService provinceService;
 
-	public AdminRoleController(AdminRoleService adminRoleService) {
-		this.adminRoleService = adminRoleService;
+	public AdminProvinceController(ProvinceService provinceService) {
+		this.provinceService = provinceService;
 	}
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<PaginatedResponse<AdminRoleResponse>>> getList(
+	public ResponseEntity<ApiResponse<PaginatedResponse<ProvinceResponse>>> getList(
 			@ParameterObject
-			AdminRoleFilterRequest filter,
+			ProvinceFilterRequest filter,
 			@ParameterObject
-			@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+			@PageableDefault(size = 10, sort = "sortOrder", direction = Sort.Direction.ASC)
 			Pageable pageable) {
-		return adminRoleService.getList(filter, pageable);
+		return provinceService.getList(filter, pageable);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<AdminRoleResponse>> getById(@PathVariable Long id) {
-		return adminRoleService.getById(id);
+	public ResponseEntity<ApiResponse<ProvinceResponse>> getById(@PathVariable Long id) {
+		return provinceService.getById(id);
 	}
 
 	@PostMapping
-	public ResponseEntity<ApiResponse<AdminRoleResponse>> create(
+	public ResponseEntity<ApiResponse<ProvinceResponse>> create(
 			@Valid
 			@RequestBody
-			CreateAdminRoleRequest request,
+			CreateProvinceRequest request,
 			@Parameter(hidden = true)
 			@AuthenticationPrincipal
 			Jwt jwt) {
-		return adminRoleService.create(request, jwt.getSubject());
+		return provinceService.create(request, jwt.getSubject());
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<AdminRoleResponse>> update(
+	public ResponseEntity<ApiResponse<ProvinceResponse>> update(
 			@PathVariable
 			Long id,
 			@Valid
 			@RequestBody
-			UpdateAdminRoleRequest request,
+			UpdateProvinceRequest request,
 			@Parameter(hidden = true)
 			@AuthenticationPrincipal
 			Jwt jwt) {
-		return adminRoleService.update(id, request, jwt.getSubject());
+		return provinceService.update(id, request, jwt.getSubject());
 	}
 
 	@DeleteMapping("/{id}")
@@ -90,7 +90,7 @@ public class AdminRoleController {
 			@Parameter(hidden = true)
 			@AuthenticationPrincipal
 			Jwt jwt) {
-		return adminRoleService.softDelete(id, jwt.getSubject());
+		return provinceService.softDelete(id, jwt.getSubject());
 	}
 
 	@PatchMapping("/{id}/restore")
@@ -100,11 +100,11 @@ public class AdminRoleController {
 			@Parameter(hidden = true)
 			@AuthenticationPrincipal
 			Jwt jwt) {
-		return adminRoleService.restore(id, jwt.getSubject());
+		return provinceService.restore(id, jwt.getSubject());
 	}
 
 	@DeleteMapping("/{id}/permanent")
 	public ResponseEntity<ApiResponse<Void>> permanentDelete(@PathVariable Long id) {
-		return adminRoleService.permanentDelete(id);
+		return provinceService.permanentDelete(id);
 	}
 }

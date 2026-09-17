@@ -1,5 +1,7 @@
 package com.recruitment.dto.request.admin.user;
 
+import com.recruitment.util.helper.AccentHelper;
+
 public record AdminUserFilterRequest(
 		String keyword,
 		Long roleId,
@@ -11,9 +13,6 @@ public record AdminUserFilterRequest(
 	}
 
 	public String normalizedKeyword() {
-		if (keyword == null || keyword.isBlank()) {
-			return null;
-		}
-		return keyword.trim();
+		return AccentHelper.normalizeForSearch(keyword);
 	}
 }

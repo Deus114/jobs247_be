@@ -1,7 +1,8 @@
 package com.recruitment.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ import com.recruitment.repository.AdminRoleRepository;
 import com.recruitment.repository.AdminUserRepository;
 import com.recruitment.specification.AdminUserSpecification;
 import com.recruitment.util.helper.FileHelper;
+import com.recruitment.util.helper.SoftDeletedPageQuery;
 
 @Service
 public class AdminUserService {
@@ -40,6 +42,7 @@ public class AdminUserService {
 	private final PasswordEncoder passwordEncoder;
 	private final MessageService messageService;
 	private final FileStorageService fileStorageService;
+	private final SoftDeletedPageQuery softDeletedPageQuery;
 
 	public AdminUserService(
 			AdminUserRepository adminUserRepository,
@@ -47,13 +50,15 @@ public class AdminUserService {
 			AdminUserMapper adminUserMapper,
 			PasswordEncoder passwordEncoder,
 			MessageService messageService,
-			FileStorageService fileStorageService) {
+			FileStorageService fileStorageService,
+			SoftDeletedPageQuery softDeletedPageQuery) {
 		this.adminUserRepository = adminUserRepository;
 		this.adminRoleRepository = adminRoleRepository;
 		this.adminUserMapper = adminUserMapper;
 		this.passwordEncoder = passwordEncoder;
 		this.messageService = messageService;
 		this.fileStorageService = fileStorageService;
+		this.softDeletedPageQuery = softDeletedPageQuery;
 	}
 
 	public AdminUser getByUsername(String username) {
@@ -77,14 +82,22 @@ public class AdminUserService {
 			Pageable pageable) {
 
 		Page<AdminUserResponse> resultPage = filter.isDeleted()
-				? adminUserRepository.findAllSoftDeleted(
+				? softDeletedPageQuery.find(
+						AdminUser.class,
+						"admin_users u",
+						"u",
+						List.of("u.username", "u.name"),
 						filter.normalizedKeyword(),
-						filter.roleId(),
-						filter.active(),
-						toNativePageable(pageable))
-						.map(adminUser -> adminUserMapper.toResponse(adminUser))
+						"AND (:roleId IS NULL OR u.role_id = :roleId) "
+								+ "AND (:active IS NULL OR u.active = :active)",
+						SoftDeletedPageQuery.params(
+								"roleId", filter.roleId(),
+								"active", filter.active()),
+						"u.created_at DESC",
+						pageable)
+						.map(adminUserMapper::toResponse)
 				: adminUserRepository.findAll(AdminUserSpecification.build(filter), pageable)
-						.map(adminUser -> adminUserMapper.toResponse(adminUser));
+						.map(adminUserMapper::toResponse);
 
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("admin-user.list.success"),
@@ -295,13 +308,5 @@ public class AdminUserService {
 		if (exists) {
 			throw new DuplicateResourceException("error.admin-user.username.duplicate", username.trim());
 		}
-	}
-
-	/**
-	 * Native soft-delete query already has ORDER BY created_at. Use page/size only to avoid Spring Sort property names
-	 * (createdAt) on SQL columns.
-	 */
-	private Pageable toNativePageable(Pageable pageable) {
-		return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
 	}
 }
