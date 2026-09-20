@@ -32,6 +32,7 @@ import com.recruitment.mapper.IndustryGroupMapper;
 import com.recruitment.repository.IndustryGroupRepository;
 import com.recruitment.repository.IndustryRepository;
 import com.recruitment.specification.IndustryGroupSpecification;
+import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.FileHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
 
@@ -85,7 +86,7 @@ public class IndustryGroupService {
 						"industry_groups g",
 						"g",
 						List.of("g.name_vi", "g.name_en", "g.description_vi", "g.description_en"),
-						filter.normalizedKeyword(),
+						AccentHelper.normalizeForSearch(filter.keyword()),
 						"AND (:active IS NULL OR g.active = :active)",
 						SoftDeletedPageQuery.params("active", filter.active()),
 						resolveSoftDeletedOrderBy(pageable),

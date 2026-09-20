@@ -29,6 +29,7 @@ import com.recruitment.mapper.IndustryMapper;
 import com.recruitment.repository.IndustryGroupRepository;
 import com.recruitment.repository.IndustryRepository;
 import com.recruitment.specification.IndustrySpecification;
+import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.FileHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
 
@@ -68,7 +69,7 @@ public class IndustryService {
 						"industries i",
 						"i",
 						List.of("i.name_vi", "i.name_en", "i.description_vi", "i.description_en"),
-						filter.normalizedKeyword(),
+						AccentHelper.normalizeForSearch(filter.keyword()),
 						"AND (:active IS NULL OR i.active = :active) "
 								+ "AND (:industryGroupId IS NULL OR i.industry_group_id = :industryGroupId)",
 						SoftDeletedPageQuery.params(

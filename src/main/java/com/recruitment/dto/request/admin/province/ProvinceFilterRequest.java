@@ -1,7 +1,5 @@
 package com.recruitment.dto.request.admin.province;
 
-import com.recruitment.util.helper.AccentHelper;
-
 public record ProvinceFilterRequest(
 		String keyword,
 		String region,
@@ -10,10 +8,6 @@ public record ProvinceFilterRequest(
 
 	public boolean isDeleted() {
 		return Boolean.TRUE.equals(deleted);
-	}
-
-	public String normalizedKeyword() {
-		return AccentHelper.normalizeForSearch(keyword);
 	}
 
 	public String normalizedRegion() {

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.recruitment.dto.request.admin.permission.AdminPermissionFilterRequest;
 import com.recruitment.entity.AdminPermission;
+import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SearchHelper;
 
 public final class AdminPermissionSpecification {
@@ -17,7 +18,7 @@ public final class AdminPermissionSpecification {
 		return (root, query, criteriaBuilder) -> {
 			Predicate predicate = criteriaBuilder.conjunction();
 
-			String keyword = filter.normalizedKeyword();
+			String keyword = AccentHelper.normalizeForSearch(filter.keyword());
 			if (keyword != null) {
 				predicate = criteriaBuilder.and(predicate, criteriaBuilder.or(
 						SearchHelper.likeUnaccent(criteriaBuilder, root.get("name"), keyword),

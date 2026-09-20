@@ -39,6 +39,11 @@ public final class Constants {
 	public static final String PROVINCES_PUBLIC_PATH = "/api/v1/provinces";
 	public static final String ADMIN_PROVINCES_BASE_PATH = "/api/v1/admin/provinces";
 
+	// --- Education Level API ---
+
+	public static final String EDUCATION_LEVELS_PUBLIC_PATH = "/api/v1/education-levels";
+	public static final String ADMIN_EDUCATION_LEVELS_BASE_PATH = "/api/v1/admin/education-levels";
+
 	public static final String ADMIN_API_PATTERN = "/api/v1/admin/**";
 
 	// --- Admin Auth Cookie ---

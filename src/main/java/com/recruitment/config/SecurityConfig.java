@@ -66,7 +66,8 @@ public class SecurityConfig {
 			Constants.ADMIN_AUTH_REFRESH_PATH,
 			Constants.BUSINESS_CONFIG_PUBLIC_PATH,
 			Constants.INDUSTRY_GROUPS_PUBLIC_PATH,
-			Constants.PROVINCES_PUBLIC_PATH
+			Constants.PROVINCES_PUBLIC_PATH,
+			Constants.EDUCATION_LEVELS_PUBLIC_PATH
 	};
 
 	@Bean
@@ -127,7 +128,8 @@ public class SecurityConfig {
 				|| Constants.ADMIN_AUTH_REFRESH_PATH.equals(path)
 				|| Constants.BUSINESS_CONFIG_PUBLIC_PATH.equals(path)
 				|| Constants.INDUSTRY_GROUPS_PUBLIC_PATH.equals(path)
-				|| Constants.PROVINCES_PUBLIC_PATH.equals(path);
+				|| Constants.PROVINCES_PUBLIC_PATH.equals(path)
+				|| Constants.EDUCATION_LEVELS_PUBLIC_PATH.equals(path);
 	}
 
 	@Bean

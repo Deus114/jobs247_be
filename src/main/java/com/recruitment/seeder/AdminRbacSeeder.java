@@ -41,6 +41,7 @@ public class AdminRbacSeeder implements CommandLineRunner {
 	private static final String MODULE_INDUSTRY_GROUP = "industry-group";
 	private static final String MODULE_INDUSTRY = "industry";
 	private static final String MODULE_PROVINCE = "province";
+	private static final String MODULE_EDUCATION_LEVEL = "education-level";
 	private static final Set<String> MANAGED_MODULES = Set.of(
 			MODULE_ADMIN_USER,
 			MODULE_ADMIN_ROLE,
@@ -48,7 +49,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 			MODULE_BUSINESS_CONFIG,
 			MODULE_INDUSTRY_GROUP,
 			MODULE_INDUSTRY,
-			MODULE_PROVINCE);
+			MODULE_PROVINCE,
+			MODULE_EDUCATION_LEVEL);
 
 	private final AdminRoleRepository adminRoleRepository;
 	private final AdminUserRepository adminUserRepository;
@@ -94,6 +96,7 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		seeds.addAll(industryGroupPermissionSeeds());
 		seeds.addAll(industryPermissionSeeds());
 		seeds.addAll(provincePermissionSeeds());
+		seeds.addAll(educationLevelPermissionSeeds());
 
 		Set<String> seedKeys = new HashSet<>();
 		int created = 0;
@@ -255,6 +258,25 @@ public class AdminRbacSeeder implements CommandLineRunner {
 				new PermissionSeed("PERMANENT_DELETE_PROVINCE", "Xóa vĩnh viễn tỉnh thành phố", MODULE_PROVINCE,
 						"DELETE",
 						Constants.ADMIN_PROVINCES_BASE_PATH + "/{id}/permanent"));
+	}
+
+	private List<PermissionSeed> educationLevelPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_EDUCATION_LEVELS", "Xem danh sách trình độ", MODULE_EDUCATION_LEVEL, "GET",
+						Constants.ADMIN_EDUCATION_LEVELS_BASE_PATH),
+				new PermissionSeed("VIEW_EDUCATION_LEVEL", "Xem chi tiết trình độ", MODULE_EDUCATION_LEVEL, "GET",
+						Constants.ADMIN_EDUCATION_LEVELS_BASE_PATH + "/{id}"),
+				new PermissionSeed("CREATE_EDUCATION_LEVEL", "Tạo trình độ", MODULE_EDUCATION_LEVEL, "POST",
+						Constants.ADMIN_EDUCATION_LEVELS_BASE_PATH),
+				new PermissionSeed("UPDATE_EDUCATION_LEVEL", "Cập nhật trình độ", MODULE_EDUCATION_LEVEL, "PUT",
+						Constants.ADMIN_EDUCATION_LEVELS_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_EDUCATION_LEVEL", "Xóa mềm trình độ", MODULE_EDUCATION_LEVEL, "DELETE",
+						Constants.ADMIN_EDUCATION_LEVELS_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_EDUCATION_LEVEL", "Khôi phục trình độ", MODULE_EDUCATION_LEVEL, "PATCH",
+						Constants.ADMIN_EDUCATION_LEVELS_BASE_PATH + "/{id}/restore"),
+				new PermissionSeed("PERMANENT_DELETE_EDUCATION_LEVEL", "Xóa vĩnh viễn trình độ", MODULE_EDUCATION_LEVEL,
+						"DELETE",
+						Constants.ADMIN_EDUCATION_LEVELS_BASE_PATH + "/{id}/permanent"));
 	}
 
 	private boolean applySeed(AdminPermission permission, PermissionSeed seed) {

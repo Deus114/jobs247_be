@@ -31,6 +31,7 @@ import com.recruitment.repository.AdminRoleRepository;
 import com.recruitment.repository.AdminUserRepository;
 import com.recruitment.security.PermissionAuthorizationManager;
 import com.recruitment.specification.AdminRoleSpecification;
+import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
 
 @Service
@@ -71,7 +72,7 @@ public class AdminRoleService {
 						"admin_roles r",
 						"r",
 						List.of("r.name", "r.description"),
-						filter.normalizedKeyword(),
+						AccentHelper.normalizeForSearch(filter.keyword()),
 						"AND (:fullAccess IS NULL OR r.full_access = :fullAccess) "
 								+ "AND (:active IS NULL OR r.active = :active)",
 						SoftDeletedPageQuery.params(

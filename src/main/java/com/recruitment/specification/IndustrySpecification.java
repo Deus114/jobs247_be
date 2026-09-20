@@ -1,12 +1,13 @@
 package com.recruitment.specification;
 
-import jakarta.persistence.criteria.Predicate;
-
 import org.springframework.data.jpa.domain.Specification;
 
 import com.recruitment.dto.request.admin.industry.IndustryFilterRequest;
 import com.recruitment.entity.Industry;
+import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SearchHelper;
+
+import jakarta.persistence.criteria.Predicate;
 
 public final class IndustrySpecification {
 
@@ -17,7 +18,7 @@ public final class IndustrySpecification {
 		return (root, query, criteriaBuilder) -> {
 			Predicate predicate = criteriaBuilder.conjunction();
 
-			String keyword = filter.normalizedKeyword();
+			String keyword = AccentHelper.normalizeForSearch(filter.keyword());
 			if (keyword != null) {
 				predicate = criteriaBuilder.and(predicate, criteriaBuilder.or(
 						SearchHelper.likeUnaccent(criteriaBuilder, root.get("nameVi"), keyword),

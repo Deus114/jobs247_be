@@ -85,7 +85,7 @@ public final class AccentHelper {
 		return out.toString().toLowerCase(Locale.ROOT);
 	}
 
-	/** Trim + {@link #unaccent(String)}; blank → null. Filter DTO dùng method này. */
+	/** Trim + {@link #unaccent(String)}; blank → null. */
 	public static String normalizeForSearch(String input) {
 		if (input == null || input.isBlank()) {
 			return null;

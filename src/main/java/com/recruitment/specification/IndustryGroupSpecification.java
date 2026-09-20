@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.recruitment.dto.request.admin.industrygroup.IndustryGroupFilterRequest;
 import com.recruitment.entity.IndustryGroup;
+import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SearchHelper;
 
 public final class IndustryGroupSpecification {
@@ -18,7 +19,7 @@ public final class IndustryGroupSpecification {
 		return (root, query, criteriaBuilder) -> {
 			Predicate predicate = criteriaBuilder.conjunction();
 
-			String keyword = filter.normalizedKeyword();
+			String keyword = AccentHelper.normalizeForSearch(filter.keyword());
 			if (keyword != null) {
 				predicate = criteriaBuilder.and(predicate, criteriaBuilder.or(
 						SearchHelper.likeUnaccent(criteriaBuilder, root.get("nameVi"), keyword),

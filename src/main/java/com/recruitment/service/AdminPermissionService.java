@@ -3,7 +3,6 @@ package com.recruitment.service;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +24,7 @@ import com.recruitment.mapper.AdminPermissionMapper;
 import com.recruitment.repository.AdminPermissionRepository;
 import com.recruitment.security.PermissionAuthorizationManager;
 import com.recruitment.specification.AdminPermissionSpecification;
+import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
 
 @Service
@@ -59,7 +59,7 @@ public class AdminPermissionService {
 						"admin_permissions p",
 						"p",
 						List.of("p.name", "p.description", "p.path"),
-						filter.normalizedKeyword(),
+						AccentHelper.normalizeForSearch(filter.keyword()),
 						"AND (:module IS NULL OR p.module = :module) "
 								+ "AND (:method IS NULL OR p.method = :method) "
 								+ "AND (:type IS NULL OR p.type = :type) "

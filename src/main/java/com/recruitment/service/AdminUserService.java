@@ -30,6 +30,7 @@ import com.recruitment.mapper.AdminUserMapper;
 import com.recruitment.repository.AdminRoleRepository;
 import com.recruitment.repository.AdminUserRepository;
 import com.recruitment.specification.AdminUserSpecification;
+import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.FileHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
 
@@ -87,7 +88,7 @@ public class AdminUserService {
 						"admin_users u",
 						"u",
 						List.of("u.username", "u.name"),
-						filter.normalizedKeyword(),
+						AccentHelper.normalizeForSearch(filter.keyword()),
 						"AND (:roleId IS NULL OR u.role_id = :roleId) "
 								+ "AND (:active IS NULL OR u.active = :active)",
 						SoftDeletedPageQuery.params(

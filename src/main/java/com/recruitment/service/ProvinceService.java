@@ -25,6 +25,7 @@ import com.recruitment.exception.ResourceNotFoundException;
 import com.recruitment.mapper.ProvinceMapper;
 import com.recruitment.repository.ProvinceRepository;
 import com.recruitment.specification.ProvinceSpecification;
+import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
 
 @Service
@@ -69,7 +70,7 @@ public class ProvinceService {
 						"provinces p",
 						"p",
 						List.of("p.name"),
-						filter.normalizedKeyword(),
+						AccentHelper.normalizeForSearch(filter.keyword()),
 						"AND (:region IS NULL OR p.region = :region) "
 								+ "AND (:active IS NULL OR p.active = :active)",
 						SoftDeletedPageQuery.params(

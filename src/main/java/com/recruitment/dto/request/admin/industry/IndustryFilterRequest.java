@@ -1,18 +1,12 @@
 package com.recruitment.dto.request.admin.industry;
 
-import com.recruitment.util.helper.AccentHelper;
-
 public record IndustryFilterRequest(
 		String keyword,
+		Long industryGroupId,
 		Boolean active,
-		Boolean deleted,
-		Long industryGroupId) {
+		Boolean deleted) {
 
 	public boolean isDeleted() {
 		return Boolean.TRUE.equals(deleted);
-	}
-
-	public String normalizedKeyword() {
-		return AccentHelper.normalizeForSearch(keyword);
 	}
 }
