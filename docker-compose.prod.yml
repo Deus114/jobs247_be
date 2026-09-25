@@ -16,6 +16,8 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - jobs247-network
     healthcheck:
       test:
         [
@@ -34,6 +36,8 @@ services:
     command: redis-server --maxmemory 48mb --maxmemory-policy allkeys-lru --save ""
     volumes:
       - redis_data:/data
+    networks:
+      - jobs247-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -50,6 +54,8 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - jobs247-network
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 15s
