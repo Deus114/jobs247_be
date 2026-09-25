@@ -17,6 +17,8 @@ public class AdminPermissionMapper {
 				permission.getPath(),
 				permission.getMethod(),
 				permission.getType(),
-				permission.isActive());
+				permission.isActive(),
+				permission.getCreatedAt(),
+				permission.getUpdatedAt());
 	}
 }

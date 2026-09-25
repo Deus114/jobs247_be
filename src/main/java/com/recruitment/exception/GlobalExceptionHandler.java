@@ -46,6 +46,10 @@ public class GlobalExceptionHandler {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
 					.body(ApiResponse.notFound(message));
 		}
+		if (ex instanceof AccountInactiveException) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN)
+					.body(ApiResponse.forbidden(message));
+		}
 		if (ex instanceof DuplicateResourceException) {
 			return ResponseEntity.status(HttpStatus.CONFLICT)
 					.body(ApiResponse.of(409, message, null));

@@ -42,6 +42,7 @@ public class AdminRbacSeeder implements CommandLineRunner {
 	private static final String MODULE_INDUSTRY = "industry";
 	private static final String MODULE_PROVINCE = "province";
 	private static final String MODULE_EDUCATION_LEVEL = "education-level";
+	private static final PermissionTypeEnum SEEDED_TYPE = PermissionTypeEnum.ACTION;
 	private static final Set<String> MANAGED_MODULES = Set.of(
 			MODULE_ADMIN_USER,
 			MODULE_ADMIN_ROLE,
@@ -101,14 +102,19 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		Set<String> seedKeys = new HashSet<>();
 		int created = 0;
 		int updated = 0;
+		int skipped = 0;
 
 		for (PermissionSeed seed : seeds) {
-			seedKeys.add(permissionKey(seed.path(), seed.method()));
+			seedKeys.add(permissionKey(seed.path(), seed.method(), SEEDED_TYPE));
 			AdminPermission permission = adminPermissionRepository
-					.findByPathAndMethod(seed.path(), seed.method())
+					.findByPathAndMethodAndType(seed.path(), seed.method(), SEEDED_TYPE)
 					.orElse(null);
 
 			if (permission == null) {
+				if (adminPermissionRepository.existsByPathAndMethod(seed.path(), seed.method())) {
+					skipped++;
+					continue;
+				}
 				permission = new AdminPermission();
 				applySeed(permission, seed);
 				adminPermissionRepository.save(permission);
@@ -124,8 +130,9 @@ public class AdminRbacSeeder implements CommandLineRunner {
 
 		List<Long> removedIds = new ArrayList<>();
 		for (AdminPermission existing : adminPermissionRepository.findAll()) {
-			if (MANAGED_MODULES.contains(existing.getModule())
-					&& !seedKeys.contains(permissionKey(existing.getPath(), existing.getMethod()))) {
+			if (existing.getType() == SEEDED_TYPE
+					&& MANAGED_MODULES.contains(existing.getModule())
+					&& !seedKeys.contains(permissionKey(existing.getPath(), existing.getMethod(), existing.getType()))) {
 				removedIds.add(existing.getId());
 			}
 		}
@@ -135,7 +142,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 			adminPermissionRepository.hardDeleteByIds(removedIds);
 		}
 
-		log.info("Permissions synced — created={}, updated={}, removed={}", created, updated, removedIds.size());
+		log.info("Permissions synced — created={}, updated={}, removed={}, skipped={}",
+				created, updated, removedIds.size(), skipped);
 	}
 
 	private List<PermissionSeed> adminUserPermissionSeeds() {
@@ -301,8 +309,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 			permission.setMethod(seed.method());
 			changed = true;
 		}
-		if (permission.getType() != PermissionTypeEnum.ACTION) {
-			permission.setType(PermissionTypeEnum.ACTION);
+		if (permission.getType() != SEEDED_TYPE) {
+			permission.setType(SEEDED_TYPE);
 			changed = true;
 		}
 		if (!permission.isActive()) {
@@ -312,8 +320,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		return changed;
 	}
 
-	private String permissionKey(String path, String method) {
-		return method + " " + path;
+	private String permissionKey(String path, String method, PermissionTypeEnum type) {
+		return method + " " + path + " " + type.name();
 	}
 
 	private AdminRole seedSuperAdminRole() {

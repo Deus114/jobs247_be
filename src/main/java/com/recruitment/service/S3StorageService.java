@@ -9,9 +9,12 @@ import org.springframework.stereotype.Service;
 import com.recruitment.config.S3Config.S3Properties;
 import com.recruitment.exception.StorageException;
 
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
@@ -54,6 +57,19 @@ public class S3StorageService {
 		}
 	}
 
+	public Optional<StoredObject> findObject(String key) {
+		try {
+			ResponseBytes<GetObjectResponse> bytes = s3Client.getObjectAsBytes(GetObjectRequest.builder()
+					.bucket(s3Properties.bucket())
+					.key(key)
+					.build());
+			return Optional.of(new StoredObject(bytes.asByteArray(), bytes.response().contentType()));
+		} catch (Exception ex) {
+			log.warn("Failed to read object from S3: key={}", key, ex);
+			return Optional.empty();
+		}
+	}
+
 	public String toPublicUrl(String key) {
 		return s3Properties.publicBaseUrl() + "/" + key;
 	}
@@ -78,5 +94,8 @@ public class S3StorageService {
 			return Optional.empty();
 		}
 		return Optional.of(key);
+	}
+
+	public record StoredObject(byte[] content, String contentType) {
 	}
 }

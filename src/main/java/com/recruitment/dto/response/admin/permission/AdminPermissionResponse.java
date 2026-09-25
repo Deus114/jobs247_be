@@ -1,5 +1,7 @@
 package com.recruitment.dto.response.admin.permission;
 
+import java.time.Instant;
+
 import com.recruitment.enums.PermissionTypeEnum;
 
 public record AdminPermissionResponse(
@@ -10,5 +12,7 @@ public record AdminPermissionResponse(
 		String path,
 		String method,
 		PermissionTypeEnum type,
-		boolean active) {
+		boolean active,
+		Instant createdAt,
+		Instant updatedAt) {
 }

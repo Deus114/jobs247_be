@@ -64,6 +64,11 @@ public class SecurityConfig {
 			Constants.SWAGGER_UI_HTML,
 			Constants.ADMIN_AUTH_LOGIN_PATH,
 			Constants.ADMIN_AUTH_REFRESH_PATH,
+			Constants.AUTH_OTP_SEND_PATH,
+			Constants.AUTH_OTP_VERIFY_PATH,
+			Constants.AUTH_REGISTER_PATH,
+			Constants.AUTH_LOGIN_PATH,
+			Constants.AUTH_REFRESH_PATH,
 			Constants.BUSINESS_CONFIG_PUBLIC_PATH,
 			Constants.INDUSTRY_GROUPS_PUBLIC_PATH,
 			Constants.PROVINCES_PUBLIC_PATH,
@@ -97,7 +102,10 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(WHITELIST).permitAll()
-						.requestMatchers(Constants.ADMIN_USERS_ME_PATH, Constants.ADMIN_AUTH_LOGOUT_PATH)
+						.requestMatchers(
+								Constants.ADMIN_USERS_ME_PATH,
+								Constants.ADMIN_AUTH_LOGOUT_PATH,
+								Constants.AUTH_LOGOUT_PATH)
 						.authenticated()
 						.requestMatchers(Constants.ADMIN_API_PATTERN).access(permissionAuthorizationManager)
 						.anyRequest().authenticated())
@@ -126,6 +134,11 @@ public class SecurityConfig {
 		String path = request.getRequestURI();
 		return Constants.ADMIN_AUTH_LOGIN_PATH.equals(path)
 				|| Constants.ADMIN_AUTH_REFRESH_PATH.equals(path)
+				|| Constants.AUTH_OTP_SEND_PATH.equals(path)
+				|| Constants.AUTH_OTP_VERIFY_PATH.equals(path)
+				|| Constants.AUTH_REGISTER_PATH.equals(path)
+				|| Constants.AUTH_LOGIN_PATH.equals(path)
+				|| Constants.AUTH_REFRESH_PATH.equals(path)
 				|| Constants.BUSINESS_CONFIG_PUBLIC_PATH.equals(path)
 				|| Constants.INDUSTRY_GROUPS_PUBLIC_PATH.equals(path)
 				|| Constants.PROVINCES_PUBLIC_PATH.equals(path)

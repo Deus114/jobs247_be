@@ -1,27 +1,19 @@
 services:
   mysql:
     image: mysql:8.4
-
     container_name: jobs247-mysql
-
     restart: unless-stopped
-
     command: --default-time-zone=+07:00
-
     environment:
       TZ: Asia/Ho_Chi_Minh
-
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-
     ports:
       - "3307:3306"
-
     volumes:
       - mysql_data:/var/lib/mysql
-
     healthcheck:
       test:
         [
@@ -32,25 +24,44 @@ services:
       timeout: 5s
       retries: 10
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: jobs247-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   backend:
     build:
       context: .
-
     container_name: jobs247-backend
-
     depends_on:
       mysql:
         condition: service_healthy
-
+      rabbitmq:
+        condition: service_healthy
     env_file:
       - .env
-
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
-
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      MAIL_QUEUE_ENABLED: "true"
     ports:
       - "8080:8080"
 
 volumes:
   mysql_data:
+  rabbitmq_data:

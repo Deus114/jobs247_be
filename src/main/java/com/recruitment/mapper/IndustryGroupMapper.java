@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import com.recruitment.dto.response.admin.industrygroup.IndustryGroupResponse;
 import com.recruitment.dto.response.common.IndustryGroupPublicResponse;
 import com.recruitment.dto.response.common.IndustryPublicResponse;
-import com.recruitment.entity.Industry;
 import com.recruitment.entity.IndustryGroup;
 import com.recruitment.util.helper.LocaleTextHelper;
 
@@ -39,7 +38,7 @@ public class IndustryGroupMapper {
 		List<IndustryPublicResponse> industries = group.getIndustries() == null
 				? List.of()
 				: group.getIndustries().stream()
-						.filter(Industry::isActive)
+						.filter(industry -> industry != null && industry.isActive())
 						.map(industryMapper::toPublicResponse)
 						.toList();
 

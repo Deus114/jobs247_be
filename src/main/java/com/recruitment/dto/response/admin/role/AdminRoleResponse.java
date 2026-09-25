@@ -1,5 +1,6 @@
 package com.recruitment.dto.response.admin.role;
 
+import java.time.Instant;
 import java.util.List;
 
 import com.recruitment.dto.response.admin.permission.AdminPermissionResponse;
@@ -10,5 +11,7 @@ public record AdminRoleResponse(
 		String description,
 		boolean fullAccess,
 		boolean active,
-		List<AdminPermissionResponse> permissions) {
+		List<AdminPermissionResponse> permissions,
+		Instant createdAt,
+		Instant updatedAt) {
 }

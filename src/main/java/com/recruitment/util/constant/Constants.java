@@ -44,6 +44,16 @@ public final class Constants {
 	public static final String EDUCATION_LEVELS_PUBLIC_PATH = "/api/v1/education-levels";
 	public static final String ADMIN_EDUCATION_LEVELS_BASE_PATH = "/api/v1/admin/education-levels";
 
+	// --- User Auth API ---
+
+	public static final String AUTH_BASE_PATH = "/api/v1/auth";
+	public static final String AUTH_OTP_SEND_PATH = AUTH_BASE_PATH + "/otp/send";
+	public static final String AUTH_OTP_VERIFY_PATH = AUTH_BASE_PATH + "/otp/verify";
+	public static final String AUTH_REGISTER_PATH = AUTH_BASE_PATH + "/register";
+	public static final String AUTH_LOGIN_PATH = AUTH_BASE_PATH + "/login";
+	public static final String AUTH_REFRESH_PATH = AUTH_BASE_PATH + "/refresh";
+	public static final String AUTH_LOGOUT_PATH = AUTH_BASE_PATH + "/logout";
+
 	public static final String ADMIN_API_PATTERN = "/api/v1/admin/**";
 
 	// --- Admin Auth Cookie ---
@@ -51,6 +61,10 @@ public final class Constants {
 	public static final String ADMIN_REFRESH_TOKEN_COOKIE_NAME = "admin_refresh_token";
 	public static final String ADMIN_REFRESH_TOKEN_COOKIE_PATH = ADMIN_AUTH_BASE_PATH;
 	public static final int ADMIN_REFRESH_TOKEN_COOKIE_MAX_AGE = 259200;
+
+	public static final String USER_REFRESH_TOKEN_COOKIE_NAME = "user_refresh_token";
+	public static final String USER_REFRESH_TOKEN_COOKIE_PATH = AUTH_BASE_PATH;
+	public static final int USER_REFRESH_TOKEN_COOKIE_MAX_AGE = 259200;
 
 	// --- Swagger ---
 

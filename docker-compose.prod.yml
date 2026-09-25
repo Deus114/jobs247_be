@@ -1,77 +1,84 @@
 services:
   mysql:
     image: mysql:8.4
-
     container_name: jobs247-mysql
-
     restart: unless-stopped
-
-    command: --default-time-zone=+07:00
-
+    mem_limit: 384m
+    command: >
+      --default-time-zone=+07:00
+      --innodb-buffer-pool-size=64M
+      --performance-schema=OFF
     environment:
       TZ: Asia/Ho_Chi_Minh
-
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-
-    ports:
-      - "127.0.0.1:3306:3306"
-
     volumes:
       - mysql_data:/var/lib/mysql
-
-    networks:
-      - jobs247-network
-
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD",
+          "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD}",
         ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: jobs247-redis
+    restart: unless-stopped
+    mem_limit: 64m
+    command: redis-server --maxmemory 48mb --maxmemory-policy allkeys-lru --save ""
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-alpine
+    container_name: jobs247-rabbitmq
+    restart: unless-stopped
+    mem_limit: 192m
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
       timeout: 5s
       retries: 10
 
   backend:
     image: ${DOCKERHUB_USERNAME}/jobs247-backend:latest
-
     container_name: jobs247-backend
-
     restart: unless-stopped
-
+    mem_limit: 512m
     depends_on:
       mysql:
         condition: service_healthy
-
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     env_file:
       - .env
-
     environment:
-      SERVER_PORT: ${SERVER_PORT}
-
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_NAME: ${DB_NAME}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION}
-      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
-
-      SEED_ADMIN: ${SEED_ADMIN}
-
-      AWS_REGION: ${AWS_REGION}
-      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
-      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
-      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
-      AWS_S3_PUBLIC_BASE_URL: ${AWS_S3_PUBLIC_BASE_URL}
-
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
-
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MAIL_QUEUE_ENABLED: "true"
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
     ports:
       - "127.0.0.1:8080:8080"
 
@@ -84,3 +91,5 @@ networks:
 
 volumes:
   mysql_data:
+  redis_data:
+  rabbitmq_data:

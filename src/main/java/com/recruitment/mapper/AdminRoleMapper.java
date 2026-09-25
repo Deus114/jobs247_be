@@ -25,7 +25,9 @@ public class AdminRoleMapper {
 				role.getDescription(),
 				role.isFullAccess(),
 				role.isActive(),
-				toPermissionResponses(role.getPermissions()));
+				toPermissionResponses(role.getPermissions()),
+				role.getCreatedAt(),
+				role.getUpdatedAt());
 	}
 
 	public List<AdminPermissionResponse> toPermissionResponses(List<AdminPermission> permissions) {

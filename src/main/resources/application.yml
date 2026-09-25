@@ -36,14 +36,25 @@ spring:
       max-file-size: 10MB
       max-request-size: 50MB
       enabled: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 jwt:
   secret: ${JWT_SECRET}
   access-token-expiration: ${JWT_ACCESS_EXPIRATION}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION}
+  email-verification-expiration: ${JWT_EMAIL_VERIFICATION_EXPIRATION:900000}
 
 app:
   seed-admin: ${SEED_ADMIN}
+  auth:
+    otp-expiration: ${OTP_EXPIRATION:600000}
+    otp-resend-cooldown: ${OTP_RESEND_COOLDOWN:60000}
+  mail:
+    queue-enabled: ${MAIL_QUEUE_ENABLED:false}
 
 aws:
   region: ${AWS_REGION}
