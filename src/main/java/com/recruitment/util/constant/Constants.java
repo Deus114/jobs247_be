@@ -44,6 +44,14 @@ public final class Constants {
 	public static final String EDUCATION_LEVELS_PUBLIC_PATH = "/api/v1/education-levels";
 	public static final String ADMIN_EDUCATION_LEVELS_BASE_PATH = "/api/v1/admin/education-levels";
 
+	// --- Account (end user) API ---
+
+	public static final String ADMIN_ACCOUNTS_BASE_PATH = "/api/v1/admin/accounts";
+
+	// --- Admin Company API ---
+
+	public static final String ADMIN_COMPANIES_BASE_PATH = "/api/v1/admin/companies";
+
 	// --- User Auth API ---
 
 	public static final String AUTH_BASE_PATH = "/api/v1/auth";
@@ -53,6 +61,16 @@ public final class Constants {
 	public static final String AUTH_LOGIN_PATH = AUTH_BASE_PATH + "/login";
 	public static final String AUTH_REFRESH_PATH = AUTH_BASE_PATH + "/refresh";
 	public static final String AUTH_LOGOUT_PATH = AUTH_BASE_PATH + "/logout";
+	public static final String AUTH_ME_PATH = AUTH_BASE_PATH + "/me";
+
+	// --- Employer / job seeker API ---
+
+	public static final String EMPLOYER_API_BASE_PATH = "/api/v1/employer";
+	public static final String JOB_SEEKER_API_BASE_PATH = "/api/v1/job-seeker";
+	public static final String EMPLOYER_COMPANIES_BASE_PATH = EMPLOYER_API_BASE_PATH + "/companies";
+	public static final String EMPLOYER_COMPANY_JOIN_REQUESTS_MINE_PATH = EMPLOYER_COMPANIES_BASE_PATH
+			+ "/join-requests/mine";
+	public static final int EMPLOYER_MAX_COMPANIES = 3;
 
 	public static final String ADMIN_API_PATTERN = "/api/v1/admin/**";
 

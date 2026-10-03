@@ -23,8 +23,11 @@ public class User extends BaseEntity {
 	@Column(nullable = false)
 	private boolean emailVerified = false;
 
-	@Column(length = 500)
+	@Column(length = 1000)
 	private String avatar;
+
+	@Column(length = 20)
+	private String phone;
 
 	public String getName() {
 		return name;
@@ -72,5 +75,13 @@ public class User extends BaseEntity {
 
 	public void setAvatar(String avatar) {
 		this.avatar = avatar;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
 	}
 }

@@ -67,10 +67,7 @@ public class AdminUserController {
 	}
 
 	@PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-			content = @Content(
-					mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-					schema = @Schema(implementation = UpdateMeRequest.class)))
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE, schema = @Schema(implementation = UpdateMeRequest.class)))
 	public ResponseEntity<ApiResponse<AdminUserResponse>> updateMe(
 			@Valid
 			@ModelAttribute
@@ -82,16 +79,14 @@ public class AdminUserController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<AdminUserResponse>> getById(@PathVariable
-	Long id) {
+	public ResponseEntity<ApiResponse<AdminUserResponse>> getById(
+			@PathVariable
+			Long id) {
 		return adminUserService.getById(id);
 	}
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-			content = @Content(
-					mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-					schema = @Schema(implementation = CreateAdminUserRequest.class)))
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE, schema = @Schema(implementation = CreateAdminUserRequest.class)))
 	public ResponseEntity<ApiResponse<AdminUserResponse>> create(
 			@Valid
 			@ModelAttribute
@@ -103,10 +98,7 @@ public class AdminUserController {
 	}
 
 	@PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-			content = @Content(
-					mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-					schema = @Schema(implementation = UpdateAdminUserRequest.class)))
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE, schema = @Schema(implementation = UpdateAdminUserRequest.class)))
 	public ResponseEntity<ApiResponse<AdminUserResponse>> update(
 			@PathVariable
 			Long id,
@@ -140,8 +132,9 @@ public class AdminUserController {
 	}
 
 	@DeleteMapping("/{id}/permanent")
-	public ResponseEntity<ApiResponse<Void>> permanentDelete(@PathVariable
-	Long id) {
+	public ResponseEntity<ApiResponse<Void>> permanentDelete(
+			@PathVariable
+			Long id) {
 		return adminUserService.permanentDelete(id);
 	}
 }

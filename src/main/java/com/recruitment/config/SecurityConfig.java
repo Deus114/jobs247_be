@@ -105,7 +105,8 @@ public class SecurityConfig {
 						.requestMatchers(
 								Constants.ADMIN_USERS_ME_PATH,
 								Constants.ADMIN_AUTH_LOGOUT_PATH,
-								Constants.AUTH_LOGOUT_PATH)
+								Constants.AUTH_LOGOUT_PATH,
+								Constants.AUTH_ME_PATH)
 						.authenticated()
 						.requestMatchers(Constants.ADMIN_API_PATTERN).access(permissionAuthorizationManager)
 						.anyRequest().authenticated())

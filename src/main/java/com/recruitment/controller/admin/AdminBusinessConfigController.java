@@ -42,10 +42,7 @@ public class AdminBusinessConfigController {
 	}
 
 	@PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-			content = @Content(
-					mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-					schema = @Schema(implementation = UpdateBusinessConfigRequest.class)))
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE, schema = @Schema(implementation = UpdateBusinessConfigRequest.class)))
 	public ResponseEntity<ApiResponse<BusinessConfigResponse>> update(
 			@Valid
 			@ModelAttribute

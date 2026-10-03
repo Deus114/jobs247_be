@@ -4,11 +4,9 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -19,32 +17,44 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.recruitment.dto.request.user.auth.RegisterRequest;
 import com.recruitment.dto.request.user.auth.SendOtpRequest;
+import com.recruitment.dto.request.user.auth.UpdateUserMeRequest;
 import com.recruitment.dto.request.user.auth.UserLoginRequest;
 import com.recruitment.dto.request.user.auth.UserRefreshRequest;
 import com.recruitment.dto.request.user.auth.VerifyOtpRequest;
 import com.recruitment.dto.response.common.ApiResponse;
+import com.recruitment.dto.response.common.UploadedFileResponse;
 import com.recruitment.dto.response.user.auth.RegisterResponse;
 import com.recruitment.dto.response.user.auth.UserLoginResponse;
 import com.recruitment.dto.response.user.auth.UserSessionResponse;
 import com.recruitment.dto.response.user.auth.VerifyOtpResponse;
+import com.recruitment.dto.response.user.company.UserCompanyMembershipResponse;
 import com.recruitment.entity.EmailOtp;
 import com.recruitment.entity.User;
 import com.recruitment.entity.UserRefreshToken;
 import com.recruitment.enums.EmailOtpPurposeEnum;
 import com.recruitment.enums.EmailType;
+import com.recruitment.enums.UploadFolderType;
 import com.recruitment.enums.UserTypeEnum;
 import com.recruitment.exception.AccountInactiveException;
 import com.recruitment.exception.BusinessRuleException;
 import com.recruitment.exception.DuplicateResourceException;
 import com.recruitment.exception.InvalidTokenException;
 import com.recruitment.mail.EmailPublisher;
+import com.recruitment.mapper.CompanyMapper;
+import com.recruitment.repository.CompanyMemberRepository;
 import com.recruitment.repository.EmailOtpRepository;
 import com.recruitment.repository.UserRepository;
 import com.recruitment.security.JwtTokenProvider;
 import com.recruitment.util.constant.Constants;
+import com.recruitment.util.helper.FileHelper;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class UserAuthService {
@@ -53,32 +63,43 @@ public class UserAuthService {
 	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
 	private final UserRepository userRepository;
+	private final CompanyMemberRepository companyMemberRepository;
 	private final EmailOtpRepository emailOtpRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final EmailPublisher emailPublisher;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserRefreshTokenService userRefreshTokenService;
+	private final CompanyMapper companyMapper;
 	private final MessageService messageService;
+	private final FileStorageService fileStorageService;
 	private final Duration otpTtl;
 	private final Duration otpResendCooldown;
 
 	public UserAuthService(
 			UserRepository userRepository,
+			CompanyMemberRepository companyMemberRepository,
 			EmailOtpRepository emailOtpRepository,
 			PasswordEncoder passwordEncoder,
 			EmailPublisher emailPublisher,
 			JwtTokenProvider jwtTokenProvider,
 			UserRefreshTokenService userRefreshTokenService,
+			CompanyMapper companyMapper,
 			MessageService messageService,
-			@Value("${app.auth.otp-expiration}") long otpExpirationMillis,
-			@Value("${app.auth.otp-resend-cooldown}") long otpResendCooldownMillis) {
+			FileStorageService fileStorageService,
+			@Value("${app.auth.otp-expiration}")
+			long otpExpirationMillis,
+			@Value("${app.auth.otp-resend-cooldown}")
+			long otpResendCooldownMillis) {
 		this.userRepository = userRepository;
+		this.companyMemberRepository = companyMemberRepository;
 		this.emailOtpRepository = emailOtpRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.emailPublisher = emailPublisher;
 		this.jwtTokenProvider = jwtTokenProvider;
 		this.userRefreshTokenService = userRefreshTokenService;
+		this.companyMapper = companyMapper;
 		this.messageService = messageService;
+		this.fileStorageService = fileStorageService;
 		this.otpTtl = Duration.ofMillis(otpExpirationMillis);
 		this.otpResendCooldown = Duration.ofMillis(otpResendCooldownMillis);
 	}
@@ -168,6 +189,7 @@ public class UserAuthService {
 		user.setPassword(passwordEncoder.encode(request.password()));
 		user.setType(type);
 		user.setEmailVerified(true);
+		user.setPhone(trimToNull(request.phone()));
 		user.setActive(true);
 		user.setCreatedBy(email);
 		user.setUpdatedBy(email);
@@ -183,6 +205,9 @@ public class UserAuthService {
 						saved.getEmail(),
 						saved.getType(),
 						saved.isEmailVerified(),
+						saved.getAvatar(),
+						saved.getPhone(),
+						List.of(),
 						saved.getCreatedAt(),
 						saved.getUpdatedAt())));
 	}
@@ -268,14 +293,90 @@ public class UserAuthService {
 		return new UserLoginResponse(accessToken, refreshToken, toSession(user));
 	}
 
+	public ResponseEntity<ApiResponse<UserSessionResponse>> getMe(Jwt jwt) {
+		return ResponseEntity.ok(ApiResponse.success(
+				messageService.get("common.success"),
+				toSession(requireUser(jwt))));
+	}
+
+	@Transactional
+	public ResponseEntity<ApiResponse<UserSessionResponse>> updateMe(Jwt jwt, UpdateUserMeRequest request) {
+		User user = requireUser(jwt);
+
+		if (StringUtils.hasText(request.name())) {
+			user.setName(request.name().trim());
+		}
+		if (StringUtils.hasText(request.phone())) {
+			user.setPhone(request.phone().trim());
+		}
+		applyPasswordChange(user, request.currentPassword(), request.newPassword());
+		user.setUpdatedBy(user.getEmail());
+
+		String oldAvatarUrl = user.getAvatar();
+		MultipartFile avatar = request.avatar();
+		if (FileHelper.hasFile(avatar)) {
+			UploadedFileResponse uploaded = fileStorageService.uploadImage(avatar, UploadFolderType.USER_AVATAR);
+			user.setAvatar(uploaded.url());
+		}
+
+		User saved = userRepository.save(user);
+		if (FileHelper.hasFile(avatar) && oldAvatarUrl != null && !oldAvatarUrl.equals(saved.getAvatar())) {
+			fileStorageService.deleteByPublicUrl(oldAvatarUrl);
+		}
+
+		return ResponseEntity.ok(ApiResponse.success(
+				messageService.get("auth.me.update.success"),
+				toSession(saved)));
+	}
+
+	private User requireUser(Jwt jwt) {
+		if (jwt == null
+				|| !JwtTokenProvider.USER_ACCOUNT.equals(jwt.getClaimAsString("account"))
+				|| !JwtTokenProvider.USER_ACCESS_TYPE.equals(jwt.getClaimAsString("type"))) {
+			throw new InvalidTokenException("error.unauthorized.invalid-token");
+		}
+		User user = userRepository.findByEmail(jwt.getSubject())
+				.orElseThrow(() -> new InvalidTokenException("error.unauthorized.invalid-token"));
+		requireActive(user);
+		return user;
+	}
+
+	private void applyPasswordChange(User user, String currentPassword, String newPassword) {
+		boolean changingPassword = StringUtils.hasText(newPassword);
+		if (!changingPassword) {
+			if (StringUtils.hasText(currentPassword)) {
+				throw new BusinessRuleException("error.user.password.new-required");
+			}
+			return;
+		}
+		if (!StringUtils.hasText(currentPassword)) {
+			throw new BusinessRuleException("error.user.password.current-required");
+		}
+		if (newPassword.trim().length() < 6 || newPassword.trim().length() > 100) {
+			throw new BusinessRuleException("error.user.password.length");
+		}
+		if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+			throw new BusinessRuleException("error.user.password.current-invalid");
+		}
+		user.setPassword(passwordEncoder.encode(newPassword.trim()));
+	}
+
 	private UserSessionResponse toSession(User user) {
+		List<UserCompanyMembershipResponse> companies = UserTypeEnum.EMPLOYER.name().equals(user.getType())
+				? companyMemberRepository.findByUserIdOrderByCreatedAtAsc(user.getId()).stream()
+						.map(companyMapper::toUserMembershipResponse)
+						.toList()
+				: List.of();
 		return new UserSessionResponse(
 				user.getId(),
 				user.getName(),
 				user.getEmail(),
 				user.getType(),
 				user.isEmailVerified(),
+				user.getAvatar(),
+				user.getPhone(),
 				user.isActive(),
+				companies,
 				user.getCreatedAt(),
 				user.getUpdatedAt());
 	}
@@ -322,6 +423,13 @@ public class UserAuthService {
 			return xForwardedFor.split(",")[0].trim();
 		}
 		return request.getRemoteAddr();
+	}
+
+	private static String trimToNull(String value) {
+		if (!StringUtils.hasText(value)) {
+			return null;
+		}
+		return value.trim();
 	}
 
 	private static String normalizeEmail(String email) {

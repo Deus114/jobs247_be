@@ -42,6 +42,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 	private static final String MODULE_INDUSTRY = "industry";
 	private static final String MODULE_PROVINCE = "province";
 	private static final String MODULE_EDUCATION_LEVEL = "education-level";
+	private static final String MODULE_ACCOUNT = "account";
+	private static final String MODULE_COMPANY = "company";
 	private static final PermissionTypeEnum SEEDED_TYPE = PermissionTypeEnum.ACTION;
 	private static final Set<String> MANAGED_MODULES = Set.of(
 			MODULE_ADMIN_USER,
@@ -51,7 +53,9 @@ public class AdminRbacSeeder implements CommandLineRunner {
 			MODULE_INDUSTRY_GROUP,
 			MODULE_INDUSTRY,
 			MODULE_PROVINCE,
-			MODULE_EDUCATION_LEVEL);
+			MODULE_EDUCATION_LEVEL,
+			MODULE_ACCOUNT,
+			MODULE_COMPANY);
 
 	private final AdminRoleRepository adminRoleRepository;
 	private final AdminUserRepository adminUserRepository;
@@ -98,6 +102,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		seeds.addAll(industryPermissionSeeds());
 		seeds.addAll(provincePermissionSeeds());
 		seeds.addAll(educationLevelPermissionSeeds());
+		seeds.addAll(accountPermissionSeeds());
+		seeds.addAll(companyPermissionSeeds());
 
 		Set<String> seedKeys = new HashSet<>();
 		int created = 0;
@@ -132,7 +138,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		for (AdminPermission existing : adminPermissionRepository.findAll()) {
 			if (existing.getType() == SEEDED_TYPE
 					&& MANAGED_MODULES.contains(existing.getModule())
-					&& !seedKeys.contains(permissionKey(existing.getPath(), existing.getMethod(), existing.getType()))) {
+					&& !seedKeys
+							.contains(permissionKey(existing.getPath(), existing.getMethod(), existing.getType()))) {
 				removedIds.add(existing.getId());
 			}
 		}
@@ -285,6 +292,34 @@ public class AdminRbacSeeder implements CommandLineRunner {
 				new PermissionSeed("PERMANENT_DELETE_EDUCATION_LEVEL", "Xóa vĩnh viễn trình độ", MODULE_EDUCATION_LEVEL,
 						"DELETE",
 						Constants.ADMIN_EDUCATION_LEVELS_BASE_PATH + "/{id}/permanent"));
+	}
+
+	private List<PermissionSeed> accountPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_ACCOUNTS", "Xem danh sách người dùng", MODULE_ACCOUNT, "GET",
+						Constants.ADMIN_ACCOUNTS_BASE_PATH),
+				new PermissionSeed("VIEW_ACCOUNT", "Xem chi tiết người dùng", MODULE_ACCOUNT, "GET",
+						Constants.ADMIN_ACCOUNTS_BASE_PATH + "/{id}"),
+				new PermissionSeed("UPDATE_ACCOUNT", "Cập nhật trạng thái người dùng", MODULE_ACCOUNT, "PUT",
+						Constants.ADMIN_ACCOUNTS_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_ACCOUNT", "Xóa mềm người dùng", MODULE_ACCOUNT, "DELETE",
+						Constants.ADMIN_ACCOUNTS_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_ACCOUNT", "Khôi phục người dùng", MODULE_ACCOUNT, "PATCH",
+						Constants.ADMIN_ACCOUNTS_BASE_PATH + "/{id}/restore"));
+	}
+
+	private List<PermissionSeed> companyPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_COMPANIES", "Xem danh sách công ty", MODULE_COMPANY, "GET",
+						Constants.ADMIN_COMPANIES_BASE_PATH),
+				new PermissionSeed("VIEW_COMPANY", "Xem chi tiết công ty", MODULE_COMPANY, "GET",
+						Constants.ADMIN_COMPANIES_BASE_PATH + "/{id}"),
+				new PermissionSeed("UPDATE_COMPANY", "Cập nhật trạng thái công ty", MODULE_COMPANY, "PUT",
+						Constants.ADMIN_COMPANIES_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_COMPANY", "Xóa mềm công ty", MODULE_COMPANY, "DELETE",
+						Constants.ADMIN_COMPANIES_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_COMPANY", "Khôi phục công ty", MODULE_COMPANY, "PATCH",
+						Constants.ADMIN_COMPANIES_BASE_PATH + "/{id}/restore"));
 	}
 
 	private boolean applySeed(AdminPermission permission, PermissionSeed seed) {

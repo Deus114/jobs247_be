@@ -55,7 +55,9 @@ public class AdminEducationLevelController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<EducationLevelResponse>> getById(@PathVariable Long id) {
+	public ResponseEntity<ApiResponse<EducationLevelResponse>> getById(
+			@PathVariable
+			Long id) {
 		return educationLevelService.getById(id);
 	}
 
@@ -104,7 +106,9 @@ public class AdminEducationLevelController {
 	}
 
 	@DeleteMapping("/{id}/permanent")
-	public ResponseEntity<ApiResponse<Void>> permanentDelete(@PathVariable Long id) {
+	public ResponseEntity<ApiResponse<Void>> permanentDelete(
+			@PathVariable
+			Long id) {
 		return educationLevelService.permanentDelete(id);
 	}
 }

@@ -20,6 +20,9 @@ public record RegisterRequest(
 		@Size(max = 20, message = "{validation.user-type.max-length}")
 		String type,
 
+		@Size(max = 20, message = "{validation.company.phone.max-length}")
+		String phone,
+
 		@NotBlank(message = "{validation.verification-token.required}")
 		String verificationToken,
 
