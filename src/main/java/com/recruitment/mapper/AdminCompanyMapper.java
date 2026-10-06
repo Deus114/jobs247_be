@@ -48,6 +48,9 @@ public class AdminCompanyMapper {
 		String taxCode = company.getTaxCode();
 		String description = company.getDescription();
 		String status = company.getStatus();
+		String rejectionReason = company.getRejectionReason();
+		Instant rejectedAt = company.getRejectedAt();
+		Instant approvedAt = company.getApprovedAt();
 		boolean active = company.isActive();
 		Instant createdAt = company.getCreatedAt();
 		Instant updatedAt = company.getUpdatedAt();
@@ -68,6 +71,9 @@ public class AdminCompanyMapper {
 				taxCode,
 				description,
 				status,
+				rejectionReason,
+				rejectedAt,
+				approvedAt,
 				active,
 				members,
 				createdAt,

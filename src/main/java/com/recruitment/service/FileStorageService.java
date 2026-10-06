@@ -40,8 +40,25 @@ public class FileStorageService {
 
 		try {
 			s3StorageService.putObject(key, file.getBytes(), contentType);
+		} catch (IOException ex) {
+			log.error("Failed to read multipart file bytes", ex);
+			throw new StorageException("error.file.upload.failed", ex);
 		}
-		catch (IOException ex) {
+
+		return new UploadedFileResponse(safeFileName, key, s3StorageService.toPublicUrl(key));
+	}
+
+	public UploadedFileResponse uploadDocument(MultipartFile file, UploadFolderType folderType) {
+		validateDocument(file);
+
+		String extension = extractExtension(file.getOriginalFilename());
+		String safeFileName = buildSafeFileName(extension);
+		String key = UPLOADS_PREFIX + "/" + folderType.getFolder() + "/" + safeFileName;
+		String contentType = normalizeContentType(file.getContentType());
+
+		try {
+			s3StorageService.putObject(key, file.getBytes(), contentType);
+		} catch (IOException ex) {
 			log.error("Failed to read multipart file bytes", ex);
 			throw new StorageException("error.file.upload.failed", ex);
 		}
@@ -53,8 +70,7 @@ public class FileStorageService {
 		s3StorageService.toObjectKey(publicUrl).ifPresent(key -> {
 			try {
 				s3StorageService.deleteObject(key);
-			}
-			catch (StorageException ex) {
+			} catch (StorageException ex) {
 				log.warn("Skip S3 delete failure for url={}", publicUrl);
 			}
 		});
@@ -78,6 +94,25 @@ public class FileStorageService {
 
 		String extension = extractExtension(file.getOriginalFilename());
 		if (!fileUploadProperties.allowedImageExtensionSet().contains(extension)) {
+			throw new FileValidationException("error.file.invalid-extension");
+		}
+	}
+
+	private void validateDocument(MultipartFile file) {
+		if (file == null || file.isEmpty()) {
+			throw new FileValidationException("error.file.empty");
+		}
+		if (file.getSize() > fileUploadProperties.getMaxDocumentSizeBytes()) {
+			throw new FileValidationException(
+					"error.file.too-large",
+					fileUploadProperties.getMaxDocumentSizeBytes() / (1024 * 1024));
+		}
+		String contentType = normalizeContentType(file.getContentType());
+		if (!fileUploadProperties.allowedDocumentContentTypeSet().contains(contentType)) {
+			throw new FileValidationException("error.file.invalid-type");
+		}
+		String extension = extractExtension(file.getOriginalFilename());
+		if (!fileUploadProperties.allowedDocumentExtensionSet().contains(extension)) {
 			throw new FileValidationException("error.file.invalid-extension");
 		}
 	}

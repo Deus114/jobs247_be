@@ -72,6 +72,15 @@ public class RefreshTokenService {
 		refreshTokenRepository.revokeAllActiveByUsername(username);
 	}
 
+	@Transactional
+	public void revokeSessionByRawToken(String rawRefreshToken) {
+		refreshTokenRepository.findByToken(hashToken(rawRefreshToken)).ifPresent(stored -> {
+			if (!stored.isRevoked()) {
+				revoke(stored);
+			}
+		});
+	}
+
 	private String hashToken(String rawToken) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");

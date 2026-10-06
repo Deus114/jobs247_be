@@ -15,7 +15,7 @@ import com.recruitment.util.helper.LocaleTextHelper;
 @Component
 public class CompanyMapper {
 
-	public EmployerCompanyResponse toResponse(Company company) {
+	public EmployerCompanyResponse toResponse(Company company, boolean applied) {
 		return new EmployerCompanyResponse(
 				company.getId(),
 				company.getName(),
@@ -36,6 +36,10 @@ public class CompanyMapper {
 				company.getTaxCode(),
 				company.getDescription(),
 				company.getStatus(),
+				company.getRejectionReason(),
+				company.getRejectedAt(),
+				company.getApprovedAt(),
+				applied,
 				company.getCreatedAt(),
 				company.getUpdatedAt());
 	}

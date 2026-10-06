@@ -1,10 +1,13 @@
 package com.recruitment.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -101,9 +104,12 @@ public class CompanyService {
 		User employer = requireEmployer(jwt);
 		validateStatusFilter(filter.status());
 
-		Page<EmployerCompanyResponse> resultPage = companyRepository
-				.findAll(CompanySpecification.build(filter, employer.getId()), pageable)
-				.map(companyMapper::toResponse);
+		Page<Company> companies = companyRepository.findAll(
+				CompanySpecification.build(filter, employer.getId()),
+				pageable);
+		Set<Long> appliedCompanyIds = appliedCompanyIds(employer.getId(), companies.getContent());
+		Page<EmployerCompanyResponse> resultPage = companies.map(
+				company -> companyMapper.toResponse(company, appliedCompanyIds.contains(company.getId())));
 
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("company.list.success"),
@@ -112,11 +118,15 @@ public class CompanyService {
 
 	@Transactional(readOnly = true)
 	public ResponseEntity<ApiResponse<EmployerCompanyResponse>> getById(Long id, Jwt jwt) {
-		requireEmployer(jwt);
+		User employer = requireEmployer(jwt);
 		Company company = findActiveById(id);
+		boolean applied = companyJoinRequestRepository.existsByCompanyIdAndUserIdAndStatus(
+				company.getId(),
+				employer.getId(),
+				CompanyJoinRequestStatusEnum.PENDING.name());
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("common.success"),
-				companyMapper.toResponse(company)));
+				companyMapper.toResponse(company, applied)));
 	}
 
 	@Transactional
@@ -166,7 +176,7 @@ public class CompanyService {
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(
 				HttpStatus.CREATED.value(),
 				messageService.get("company.create.success"),
-				companyMapper.toResponse(saved)));
+				companyMapper.toResponse(saved, false)));
 	}
 
 	@Transactional
@@ -237,7 +247,7 @@ public class CompanyService {
 
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("company.update.success"),
-				companyMapper.toResponse(saved)));
+				companyMapper.toResponse(saved, false)));
 	}
 
 	@Transactional
@@ -279,19 +289,22 @@ public class CompanyService {
 
 	@Transactional(readOnly = true)
 	public ResponseEntity<ApiResponse<PaginatedResponse<EmployerCompanyJoinRequestResponse>>> getJoinRequests(
-			Long companyId,
 			CompanyJoinRequestFilterRequest filter,
 			Pageable pageable,
 			Jwt jwt) {
 
 		User employer = requireEmployer(jwt);
-		findActiveById(companyId);
-		requireOwner(companyId, employer.getId());
+		List<Long> companyIds = resolveOwnedCompanyIds(employer.getId(), filter.companyId());
+		if (companyIds.isEmpty()) {
+			return ResponseEntity.ok(ApiResponse.success(
+					messageService.get("company.join-request.list.success"),
+					PaginatedResponse.fromPage(Page.empty(pageable))));
+		}
 
 		String status = normalizeJoinStatusFilter(filter.status());
 		Page<EmployerCompanyJoinRequestResponse> resultPage = (status == null
-				? companyJoinRequestRepository.findByCompanyId(companyId, pageable)
-				: companyJoinRequestRepository.findByCompanyIdAndStatus(companyId, status, pageable))
+				? companyJoinRequestRepository.findByCompanyIdIn(companyIds, pageable)
+				: companyJoinRequestRepository.findByCompanyIdInAndStatus(companyIds, status, pageable))
 				.map(companyMapper::toJoinRequestResponse);
 
 		return ResponseEntity.ok(ApiResponse.success(
@@ -319,13 +332,15 @@ public class CompanyService {
 
 	@Transactional
 	public ResponseEntity<ApiResponse<EmployerCompanyJoinRequestResponse>> reviewJoinRequest(
-			Long companyId,
 			Long requestId,
 			ReviewCompanyJoinRequest request,
 			Jwt jwt) {
 
 		User employer = requireEmployer(jwt);
-		findActiveById(companyId);
+		CompanyJoinRequest joinRequest = companyJoinRequestRepository.findById(requestId)
+				.orElseThrow(() -> new ResourceNotFoundException(
+						"error.resource.company-join-request", "id", requestId));
+		Long companyId = joinRequest.getCompany().getId();
 		requireOwner(companyId, employer.getId());
 
 		CompanyJoinRequestStatusEnum reviewStatus = CompanyJoinRequestStatusEnum.fromValue(request.status())
@@ -333,9 +348,6 @@ public class CompanyService {
 						|| status == CompanyJoinRequestStatusEnum.REJECTED)
 				.orElseThrow(() -> new BusinessRuleException("error.company.join.status.invalid", request.status()));
 
-		CompanyJoinRequest joinRequest = companyJoinRequestRepository.findByIdAndCompanyId(requestId, companyId)
-				.orElseThrow(() -> new ResourceNotFoundException(
-						"error.resource.company-join-request", "id", requestId));
 		if (!CompanyJoinRequestStatusEnum.PENDING.name().equals(joinRequest.getStatus())) {
 			throw new BusinessRuleException("error.company.join.not-pending");
 		}
@@ -366,6 +378,36 @@ public class CompanyService {
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("company.join-request.review.success"),
 				companyMapper.toJoinRequestResponse(saved)));
+	}
+
+	private List<Long> ownedCompanyIds(Long userId) {
+		return companyMemberRepository.findByUserIdOrderByCreatedAtAsc(userId).stream()
+				.filter(member -> CompanyMemberRoleEnum.OWNER.name().equals(member.getRole()))
+				.map(member -> member.getCompany().getId())
+				.toList();
+	}
+
+	private List<Long> resolveOwnedCompanyIds(Long userId, Long companyIdFilter) {
+		List<Long> owned = ownedCompanyIds(userId);
+		if (companyIdFilter == null) {
+			return owned;
+		}
+		requireOwner(companyIdFilter, userId);
+		return List.of(companyIdFilter);
+	}
+
+	private Set<Long> appliedCompanyIds(Long userId, List<Company> companies) {
+		if (companies.isEmpty()) {
+			return Collections.emptySet();
+		}
+		ArrayList<Long> companyIds = new ArrayList<>(companies.size());
+		for (Company company : companies) {
+			companyIds.add(company.getId());
+		}
+		return new HashSet<>(companyJoinRequestRepository.findCompanyIdsByUserIdAndStatusAndCompanyIdIn(
+				userId,
+				CompanyJoinRequestStatusEnum.PENDING.name(),
+				companyIds));
 	}
 
 	private User requireEmployer(Jwt jwt) {
@@ -410,7 +452,7 @@ public class CompanyService {
 			return null;
 		}
 		return CompanyJoinRequestStatusEnum.fromValue(status)
-				.map(Enum::name)
+				.map(value -> value.name())
 				.orElseThrow(() -> new BusinessRuleException("error.company.join.filter-status.invalid", status));
 	}
 

@@ -52,6 +52,7 @@ import com.recruitment.repository.UserRepository;
 import com.recruitment.security.JwtTokenProvider;
 import com.recruitment.util.constant.Constants;
 import com.recruitment.util.helper.FileHelper;
+import com.recruitment.util.helper.RefreshCookieHelper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -72,6 +73,7 @@ public class UserAuthService {
 	private final CompanyMapper companyMapper;
 	private final MessageService messageService;
 	private final FileStorageService fileStorageService;
+	private final RefreshCookieHelper refreshCookieHelper;
 	private final Duration otpTtl;
 	private final Duration otpResendCooldown;
 
@@ -86,6 +88,7 @@ public class UserAuthService {
 			CompanyMapper companyMapper,
 			MessageService messageService,
 			FileStorageService fileStorageService,
+			RefreshCookieHelper refreshCookieHelper,
 			@Value("${app.auth.otp-expiration}")
 			long otpExpirationMillis,
 			@Value("${app.auth.otp-resend-cooldown}")
@@ -100,6 +103,7 @@ public class UserAuthService {
 		this.companyMapper = companyMapper;
 		this.messageService = messageService;
 		this.fileStorageService = fileStorageService;
+		this.refreshCookieHelper = refreshCookieHelper;
 		this.otpTtl = Duration.ofMillis(otpExpirationMillis);
 		this.otpResendCooldown = Duration.ofMillis(otpResendCooldownMillis);
 	}
@@ -228,8 +232,8 @@ public class UserAuthService {
 		UserLoginResponse loginResponse = issueTokens(
 				user,
 				httpRequest.getHeader("User-Agent"),
-				extractClientIp(httpRequest));
-		setRefreshTokenCookie(httpResponse, loginResponse.refreshToken());
+				extractClientIp(httpRequest),
+				httpResponse);
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("auth.user.login.success"),
 				loginResponse));
@@ -254,21 +258,28 @@ public class UserAuthService {
 		requireActive(user);
 
 		userRefreshTokenService.revoke(storedToken);
-		UserLoginResponse loginResponse = issueTokens(user, storedToken.getDeviceInfo(), storedToken.getIpAddress());
-		setRefreshTokenCookie(httpResponse, loginResponse.refreshToken());
+		UserLoginResponse loginResponse = issueTokens(
+				user,
+				storedToken.getDeviceInfo(),
+				storedToken.getIpAddress(),
+				httpResponse);
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("auth.user.refresh.success"),
 				loginResponse));
 	}
 
 	@Transactional
-	public ResponseEntity<ApiResponse<Void>> logout(Jwt jwt, HttpServletResponse httpResponse) {
-		if (!JwtTokenProvider.USER_ACCOUNT.equals(jwt.getClaimAsString("account"))
-				|| !JwtTokenProvider.USER_ACCESS_TYPE.equals(jwt.getClaimAsString("type"))) {
-			throw new InvalidTokenException("error.unauthorized.invalid-token");
+	public ResponseEntity<ApiResponse<Void>> logout(
+			HttpServletRequest httpRequest,
+			HttpServletResponse httpResponse) {
+		String rawRefreshToken = extractRefreshTokenFromCookie(httpRequest);
+		if (rawRefreshToken != null) {
+			userRefreshTokenService.revokeSessionByRawToken(rawRefreshToken);
 		}
-		userRefreshTokenService.revokeAllActiveByEmail(jwt.getSubject());
-		clearRefreshTokenCookie(httpResponse);
+		refreshCookieHelper.clear(
+				httpResponse,
+				Constants.USER_REFRESH_TOKEN_COOKIE_NAME,
+				Constants.AUTH_BASE_PATH);
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("auth.user.logout.success"),
 				null));
@@ -286,11 +297,20 @@ public class UserAuthService {
 		}
 	}
 
-	private UserLoginResponse issueTokens(User user, String deviceInfo, String ipAddress) {
+	private UserLoginResponse issueTokens(
+			User user,
+			String deviceInfo,
+			String ipAddress,
+			HttpServletResponse httpResponse) {
 		String accessToken = jwtTokenProvider.generateUserAccessToken(user);
 		String refreshToken = jwtTokenProvider.generateUserRefreshToken(user);
 		userRefreshTokenService.save(refreshToken, user, deviceInfo, ipAddress);
-		return new UserLoginResponse(accessToken, refreshToken, toSession(user));
+		refreshCookieHelper.set(
+				httpResponse,
+				Constants.USER_REFRESH_TOKEN_COOKIE_NAME,
+				Constants.AUTH_BASE_PATH,
+				refreshToken);
+		return new UserLoginResponse(accessToken, toSession(user));
 	}
 
 	public ResponseEntity<ApiResponse<UserSessionResponse>> getMe(Jwt jwt) {
@@ -402,19 +422,6 @@ public class UserAuthService {
 				.map(cookie -> cookie.getValue())
 				.findFirst()
 				.orElse(null);
-	}
-
-	private void setRefreshTokenCookie(HttpServletResponse response, String rawToken) {
-		response.setHeader("Set-Cookie",
-				Constants.USER_REFRESH_TOKEN_COOKIE_NAME + "=" + rawToken
-						+ "; HttpOnly; Secure; SameSite=Lax; Path=" + Constants.USER_REFRESH_TOKEN_COOKIE_PATH
-						+ "; Max-Age=" + Constants.USER_REFRESH_TOKEN_COOKIE_MAX_AGE);
-	}
-
-	private void clearRefreshTokenCookie(HttpServletResponse response) {
-		response.setHeader("Set-Cookie",
-				Constants.USER_REFRESH_TOKEN_COOKIE_NAME + "=; Max-Age=0; Path="
-						+ Constants.USER_REFRESH_TOKEN_COOKIE_PATH);
 	}
 
 	private String extractClientIp(HttpServletRequest request) {

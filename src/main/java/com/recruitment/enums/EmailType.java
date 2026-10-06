@@ -5,7 +5,9 @@ import java.util.Optional;
 
 /** Loại email transactional. Payload queue lưu {@link #name()}. */
 public enum EmailType {
-	OTP_REGISTER;
+	OTP_REGISTER,
+	APPLICATION_SUBMITTED,
+	APPLICATION_RECEIVED;
 
 	public String templateName() {
 		return name().toLowerCase(Locale.ROOT).replace('_', '-');

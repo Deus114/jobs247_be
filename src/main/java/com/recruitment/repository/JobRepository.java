@@ -1,0 +1,24 @@
+package com.recruitment.repository;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.recruitment.entity.Job;
+
+@Repository
+public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificationExecutor<Job> {
+
+	@Query(value = "SELECT * FROM jobs WHERE id = :id AND deleted_at = 1", nativeQuery = true)
+	Optional<Job> findSoftDeletedById(@Param("id") Long id);
+
+	@Modifying
+	@Query(value = "UPDATE jobs SET deleted_at = 0, deleted_by = NULL WHERE id = :id AND deleted_at = 1",
+			nativeQuery = true)
+	int restoreById(@Param("id") Long id);
+}

@@ -24,6 +24,7 @@ import com.recruitment.repository.CompanyMemberRepository;
 import com.recruitment.repository.CompanyRepository;
 import com.recruitment.specification.AdminCompanySpecification;
 import com.recruitment.util.helper.AccentHelper;
+import com.recruitment.util.helper.ApprovalStatusHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
 
 @Service
@@ -103,9 +104,14 @@ public class AdminCompanyService {
 			company.setActive(request.active());
 		}
 		if (StringUtils.hasText(request.status())) {
-			CompanyStatusEnum status = CompanyStatusEnum.fromValue(request.status())
-					.orElseThrow(() -> new BusinessRuleException("error.company.status.invalid", request.status()));
-			company.setStatus(status.name());
+			var fields = ApprovalStatusHelper.apply(
+					request.status(),
+					request.rejectionReason(),
+					"error.company.status.invalid");
+			company.setStatus(fields.status());
+			company.setRejectionReason(fields.rejectionReason());
+			company.setRejectedAt(fields.rejectedAt());
+			company.setApprovedAt(fields.approvedAt());
 		}
 		company.setUpdatedBy(currentUsername);
 

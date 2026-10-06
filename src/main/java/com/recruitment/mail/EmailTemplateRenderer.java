@@ -70,6 +70,38 @@ public class EmailTemplateRenderer {
 						"code", escape(code),
 						"expiry", escape(messageService.get(locale, prefix + ".expiry", minutes)));
 			}
+			case APPLICATION_SUBMITTED -> {
+				String prefix = "mail." + type.templateName();
+				yield Map.of(
+						"heading", escape(messageService.get(locale, prefix + ".heading")),
+						"intro", escape(messageService.get(
+								locale,
+								prefix + ".intro",
+								required(variables, "applicantName"),
+								siteName)),
+						"jobLabel", escape(messageService.get(locale, prefix + ".job-label")),
+						"jobTitle", escape(required(variables, "jobTitle")),
+						"companyLabel", escape(messageService.get(locale, prefix + ".company-label")),
+						"companyName", escape(required(variables, "companyName")),
+						"outro", escape(messageService.get(locale, prefix + ".outro")));
+			}
+			case APPLICATION_RECEIVED -> {
+				String prefix = "mail." + type.templateName();
+				yield Map.of(
+						"heading", escape(messageService.get(locale, prefix + ".heading")),
+						"intro", escape(messageService.get(
+								locale,
+								prefix + ".intro",
+								required(variables, "applicantName"),
+								siteName)),
+						"applicantLabel", escape(messageService.get(locale, prefix + ".applicant-label")),
+						"applicantName", escape(required(variables, "applicantName")),
+						"jobLabel", escape(messageService.get(locale, prefix + ".job-label")),
+						"jobTitle", escape(required(variables, "jobTitle")),
+						"companyLabel", escape(messageService.get(locale, prefix + ".company-label")),
+						"companyName", escape(required(variables, "companyName")),
+						"outro", escape(messageService.get(locale, prefix + ".outro")));
+			}
 		};
 	}
 
@@ -81,6 +113,20 @@ public class EmailTemplateRenderer {
 					siteName,
 					required(variables, "code"),
 					required(variables, "minutes"));
+			case APPLICATION_SUBMITTED -> messageService.get(
+					locale,
+					"mail." + type.templateName() + ".text",
+					required(variables, "applicantName"),
+					required(variables, "jobTitle"),
+					required(variables, "companyName"),
+					siteName);
+			case APPLICATION_RECEIVED -> messageService.get(
+					locale,
+					"mail." + type.templateName() + ".text",
+					required(variables, "applicantName"),
+					required(variables, "jobTitle"),
+					required(variables, "companyName"),
+					siteName);
 		};
 	}
 

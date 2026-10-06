@@ -1,8 +1,6 @@
 package com.recruitment.service;
 
 import java.util.Arrays;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +20,10 @@ import com.recruitment.exception.InvalidTokenException;
 import com.recruitment.mapper.AdminUserMapper;
 import com.recruitment.security.JwtTokenProvider;
 import com.recruitment.util.constant.Constants;
+import com.recruitment.util.helper.RefreshCookieHelper;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class AdminAuthService {
@@ -33,6 +35,7 @@ public class AdminAuthService {
 	private final AdminUserMapper adminUserMapper;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenService refreshTokenService;
+	private final RefreshCookieHelper refreshCookieHelper;
 	private final MessageService messageService;
 
 	public AdminAuthService(
@@ -41,12 +44,14 @@ public class AdminAuthService {
 			AdminUserMapper adminUserMapper,
 			JwtTokenProvider jwtTokenProvider,
 			RefreshTokenService refreshTokenService,
+			RefreshCookieHelper refreshCookieHelper,
 			MessageService messageService) {
 		this.authenticationManager = authenticationManager;
 		this.adminUserService = adminUserService;
 		this.adminUserMapper = adminUserMapper;
 		this.jwtTokenProvider = jwtTokenProvider;
 		this.refreshTokenService = refreshTokenService;
+		this.refreshCookieHelper = refreshCookieHelper;
 		this.messageService = messageService;
 	}
 
@@ -67,14 +72,17 @@ public class AdminAuthService {
 		String accessToken = jwtTokenProvider.generateAccessToken(adminUser);
 		String refreshToken = jwtTokenProvider.generateRefreshToken(adminUser);
 		refreshTokenService.save(refreshToken, adminUser, deviceInfo, ipAddress);
+		refreshCookieHelper.set(
+				httpResponse,
+				Constants.ADMIN_REFRESH_TOKEN_COOKIE_NAME,
+				Constants.ADMIN_AUTH_BASE_PATH,
+				refreshToken);
 
 		log.info("Admin đăng nhập thành công: {}", adminUser.getUsername());
 
-		LoginResponse loginResponse = toLoginResponse(accessToken, refreshToken, adminUser);
-		setRefreshTokenCookie(httpResponse, loginResponse.refreshToken());
-
 		return ResponseEntity.ok(ApiResponse.success(
-				messageService.get("auth.login.success"), loginResponse));
+				messageService.get("auth.login.success"),
+				new LoginResponse(accessToken, adminUserMapper.toResponse(adminUser))));
 	}
 
 	@Transactional
@@ -95,32 +103,35 @@ public class AdminAuthService {
 		String accessToken = jwtTokenProvider.generateAccessToken(adminUser);
 		String refreshToken = jwtTokenProvider.generateRefreshToken(adminUser);
 		refreshTokenService.save(refreshToken, adminUser, storedToken.getDeviceInfo(), storedToken.getIpAddress());
+		refreshCookieHelper.set(
+				httpResponse,
+				Constants.ADMIN_REFRESH_TOKEN_COOKIE_NAME,
+				Constants.ADMIN_AUTH_BASE_PATH,
+				refreshToken);
 
 		log.info("Refresh token được làm mới cho admin: {}", adminUser.getUsername());
 
-		LoginResponse loginResponse = toLoginResponse(accessToken, refreshToken, adminUser);
-		setRefreshTokenCookie(httpResponse, loginResponse.refreshToken());
-
 		return ResponseEntity.ok(ApiResponse.success(
-				messageService.get("auth.refresh.success"), loginResponse));
+				messageService.get("auth.refresh.success"),
+				new LoginResponse(accessToken, adminUserMapper.toResponse(adminUser))));
 	}
 
 	@Transactional
 	public ResponseEntity<ApiResponse<Void>> logout(
-			String username,
+			HttpServletRequest httpRequest,
 			HttpServletResponse httpResponse) {
 
-		refreshTokenService.revokeAllActiveByUsername(username);
-		clearRefreshTokenCookie(httpResponse);
-
-		log.info("Admin đăng xuất thành công: {}", username);
-
+		String rawRefreshToken = extractRefreshTokenFromCookie(httpRequest);
+		if (rawRefreshToken != null) {
+			refreshTokenService.revokeSessionByRawToken(rawRefreshToken);
+		}
+		refreshCookieHelper.clear(
+				httpResponse,
+				Constants.ADMIN_REFRESH_TOKEN_COOKIE_NAME,
+				Constants.ADMIN_AUTH_BASE_PATH);
+		log.info("Admin đăng xuất thiết bị hiện tại");
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("auth.logout.success"), null));
-	}
-
-	private LoginResponse toLoginResponse(String accessToken, String refreshToken, AdminUser adminUser) {
-		return new LoginResponse(accessToken, refreshToken, adminUserMapper.toResponse(adminUser));
 	}
 
 	private String extractRefreshToken(RefreshRequest body, HttpServletRequest request) {
@@ -144,19 +155,6 @@ public class AdminAuthService {
 				.map(cookie -> cookie.getValue())
 				.findFirst()
 				.orElse(null);
-	}
-
-	private void setRefreshTokenCookie(HttpServletResponse response, String rawToken) {
-		response.setHeader("Set-Cookie",
-				Constants.ADMIN_REFRESH_TOKEN_COOKIE_NAME + "=" + rawToken
-						+ "; HttpOnly; Secure; SameSite=Lax; Path=" + Constants.ADMIN_REFRESH_TOKEN_COOKIE_PATH
-						+ "; Max-Age=" + Constants.ADMIN_REFRESH_TOKEN_COOKIE_MAX_AGE);
-	}
-
-	private void clearRefreshTokenCookie(HttpServletResponse response) {
-		response.setHeader("Set-Cookie",
-				Constants.ADMIN_REFRESH_TOKEN_COOKIE_NAME + "=; Max-Age=0; Path="
-						+ Constants.ADMIN_REFRESH_TOKEN_COOKIE_PATH);
 	}
 
 	private String extractClientIp(HttpServletRequest request) {

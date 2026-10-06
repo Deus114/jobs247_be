@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -88,6 +89,7 @@ public class SecurityConfig {
 		configuration.setAllowedHeaders(Arrays.asList(
 				"Authorization", "Content-Type", "Cache-Control", "Accept-Language"));
 		configuration.setAllowCredentials(true);
+		configuration.setMaxAge(3600L);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
@@ -102,10 +104,18 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(WHITELIST).permitAll()
+						.requestMatchers(HttpMethod.GET,
+								Constants.PUBLIC_JOBS_BASE_PATH,
+								Constants.PUBLIC_JOBS_BASE_PATH + "/**",
+								Constants.PUBLIC_COMPANIES_BASE_PATH,
+								Constants.PUBLIC_COMPANIES_BASE_PATH + "/**")
+						.permitAll()
+						.requestMatchers(
+								Constants.ADMIN_AUTH_LOGOUT_PATH,
+								Constants.AUTH_LOGOUT_PATH)
+						.permitAll()
 						.requestMatchers(
 								Constants.ADMIN_USERS_ME_PATH,
-								Constants.ADMIN_AUTH_LOGOUT_PATH,
-								Constants.AUTH_LOGOUT_PATH,
 								Constants.AUTH_ME_PATH)
 						.authenticated()
 						.requestMatchers(Constants.ADMIN_API_PATTERN).access(permissionAuthorizationManager)

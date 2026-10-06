@@ -1,14 +1,11 @@
 package com.recruitment.controller.admin;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.recruitment.config.OpenAPIConfig;
 import com.recruitment.dto.request.admin.auth.LoginRequest;
 import com.recruitment.dto.request.admin.auth.RefreshRequest;
 import com.recruitment.dto.response.admin.auth.LoginResponse;
@@ -16,7 +13,6 @@ import com.recruitment.dto.response.common.ApiResponse;
 import com.recruitment.service.AdminAuthService;
 import com.recruitment.util.constant.Constants;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -53,11 +49,9 @@ public class AdminAuthController {
 	}
 
 	@PostMapping("/logout")
-	@SecurityRequirement(name = OpenAPIConfig.BEARER_AUTH_SCHEME)
 	public ResponseEntity<ApiResponse<Void>> logout(
-			@AuthenticationPrincipal
-			Jwt jwt,
+			HttpServletRequest httpRequest,
 			HttpServletResponse httpResponse) {
-		return adminAuthService.logout(jwt.getSubject(), httpResponse);
+		return adminAuthService.logout(httpRequest, httpResponse);
 	}
 }

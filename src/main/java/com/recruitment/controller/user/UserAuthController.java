@@ -110,11 +110,9 @@ public class UserAuthController {
 	}
 
 	@PostMapping("/logout")
-	@SecurityRequirement(name = OpenAPIConfig.BEARER_AUTH_SCHEME)
 	public ResponseEntity<ApiResponse<Void>> logout(
-			@AuthenticationPrincipal
-			Jwt jwt,
+			HttpServletRequest httpRequest,
 			HttpServletResponse httpResponse) {
-		return userAuthService.logout(jwt, httpResponse);
+		return userAuthService.logout(httpRequest, httpResponse);
 	}
 }

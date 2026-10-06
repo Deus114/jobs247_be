@@ -18,11 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.recruitment.config.OpenAPIConfig;
-import com.recruitment.dto.request.user.company.CompanyJoinRequestFilterRequest;
 import com.recruitment.dto.request.user.company.CreateCompanyJoinRequest;
 import com.recruitment.dto.request.user.company.CreateEmployerCompanyRequest;
 import com.recruitment.dto.request.user.company.EmployerCompanyFilterRequest;
-import com.recruitment.dto.request.user.company.ReviewCompanyJoinRequest;
 import com.recruitment.dto.request.user.company.UpdateEmployerCompanyRequest;
 import com.recruitment.dto.response.common.ApiResponse;
 import com.recruitment.dto.response.common.PaginatedResponse;
@@ -61,19 +59,6 @@ public class CompanyController {
 			@AuthenticationPrincipal
 			Jwt jwt) {
 		return companyService.getList(filter, pageable, jwt);
-	}
-
-	@GetMapping("/join-requests/mine")
-	public ResponseEntity<ApiResponse<PaginatedResponse<EmployerCompanyJoinRequestResponse>>> getMyJoinRequests(
-			@ParameterObject
-			CompanyJoinRequestFilterRequest filter,
-			@ParameterObject
-			@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-			Pageable pageable,
-			@Parameter(hidden = true)
-			@AuthenticationPrincipal
-			Jwt jwt) {
-		return companyService.getMyJoinRequests(filter, pageable, jwt);
 	}
 
 	@GetMapping("/{id}")
@@ -124,35 +109,5 @@ public class CompanyController {
 			Jwt jwt) {
 		CreateCompanyJoinRequest body = request != null ? request : new CreateCompanyJoinRequest(null);
 		return companyService.createJoinRequest(id, body, jwt);
-	}
-
-	@GetMapping("/{id}/join-requests")
-	public ResponseEntity<ApiResponse<PaginatedResponse<EmployerCompanyJoinRequestResponse>>> getJoinRequests(
-			@PathVariable
-			Long id,
-			@ParameterObject
-			CompanyJoinRequestFilterRequest filter,
-			@ParameterObject
-			@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-			Pageable pageable,
-			@Parameter(hidden = true)
-			@AuthenticationPrincipal
-			Jwt jwt) {
-		return companyService.getJoinRequests(id, filter, pageable, jwt);
-	}
-
-	@PutMapping("/{id}/join-requests/{requestId}")
-	public ResponseEntity<ApiResponse<EmployerCompanyJoinRequestResponse>> reviewJoinRequest(
-			@PathVariable
-			Long id,
-			@PathVariable
-			Long requestId,
-			@Valid
-			@RequestBody
-			ReviewCompanyJoinRequest request,
-			@Parameter(hidden = true)
-			@AuthenticationPrincipal
-			Jwt jwt) {
-		return companyService.reviewJoinRequest(id, requestId, request, jwt);
 	}
 }

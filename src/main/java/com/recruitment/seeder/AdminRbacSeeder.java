@@ -44,6 +44,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 	private static final String MODULE_EDUCATION_LEVEL = "education-level";
 	private static final String MODULE_ACCOUNT = "account";
 	private static final String MODULE_COMPANY = "company";
+	private static final String MODULE_JOB = "job";
+	private static final String MODULE_APPLICATION = "application";
 	private static final PermissionTypeEnum SEEDED_TYPE = PermissionTypeEnum.ACTION;
 	private static final Set<String> MANAGED_MODULES = Set.of(
 			MODULE_ADMIN_USER,
@@ -55,7 +57,9 @@ public class AdminRbacSeeder implements CommandLineRunner {
 			MODULE_PROVINCE,
 			MODULE_EDUCATION_LEVEL,
 			MODULE_ACCOUNT,
-			MODULE_COMPANY);
+			MODULE_COMPANY,
+			MODULE_JOB,
+			MODULE_APPLICATION);
 
 	private final AdminRoleRepository adminRoleRepository;
 	private final AdminUserRepository adminUserRepository;
@@ -104,6 +108,8 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		seeds.addAll(educationLevelPermissionSeeds());
 		seeds.addAll(accountPermissionSeeds());
 		seeds.addAll(companyPermissionSeeds());
+		seeds.addAll(jobPermissionSeeds());
+		seeds.addAll(applicationPermissionSeeds());
 
 		Set<String> seedKeys = new HashSet<>();
 		int created = 0;
@@ -320,6 +326,34 @@ public class AdminRbacSeeder implements CommandLineRunner {
 						Constants.ADMIN_COMPANIES_BASE_PATH + "/{id}"),
 				new PermissionSeed("RESTORE_COMPANY", "Khôi phục công ty", MODULE_COMPANY, "PATCH",
 						Constants.ADMIN_COMPANIES_BASE_PATH + "/{id}/restore"));
+	}
+
+	private List<PermissionSeed> jobPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_JOBS", "Xem danh sách tin tuyển dụng", MODULE_JOB, "GET",
+						Constants.ADMIN_JOBS_BASE_PATH),
+				new PermissionSeed("VIEW_JOB", "Xem chi tiết tin tuyển dụng", MODULE_JOB, "GET",
+						Constants.ADMIN_JOBS_BASE_PATH + "/{id}"),
+				new PermissionSeed("UPDATE_JOB", "Cập nhật trạng thái tin tuyển dụng", MODULE_JOB, "PUT",
+						Constants.ADMIN_JOBS_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_JOB", "Xóa mềm tin tuyển dụng", MODULE_JOB, "DELETE",
+						Constants.ADMIN_JOBS_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_JOB", "Khôi phục tin tuyển dụng", MODULE_JOB, "PATCH",
+						Constants.ADMIN_JOBS_BASE_PATH + "/{id}/restore"));
+	}
+
+	private List<PermissionSeed> applicationPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_APPLICATIONS", "Xem danh sách đơn ứng tuyển", MODULE_APPLICATION, "GET",
+						Constants.ADMIN_APPLICATIONS_BASE_PATH),
+				new PermissionSeed("VIEW_APPLICATION", "Xem chi tiết đơn ứng tuyển", MODULE_APPLICATION, "GET",
+						Constants.ADMIN_APPLICATIONS_BASE_PATH + "/{id}"),
+				new PermissionSeed("DELETE_APPLICATION", "Xóa mềm đơn ứng tuyển", MODULE_APPLICATION, "DELETE",
+						Constants.ADMIN_APPLICATIONS_BASE_PATH + "/{id}"),
+				new PermissionSeed("RESTORE_APPLICATION", "Khôi phục đơn ứng tuyển", MODULE_APPLICATION, "PATCH",
+						Constants.ADMIN_APPLICATIONS_BASE_PATH + "/{id}/restore"),
+				new PermissionSeed("PERMANENT_DELETE_APPLICATION", "Xóa vĩnh viễn đơn ứng tuyển", MODULE_APPLICATION,
+						"DELETE", Constants.ADMIN_APPLICATIONS_BASE_PATH + "/{id}/permanent"));
 	}
 
 	private boolean applySeed(AdminPermission permission, PermissionSeed seed) {

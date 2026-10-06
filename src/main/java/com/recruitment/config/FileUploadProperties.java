@@ -15,6 +15,10 @@ public class FileUploadProperties {
 	private long maxImageSizeBytes = 10 * 1024 * 1024;
 	private String allowedImageContentTypes = "image/jpeg,image/png,image/webp,image/gif";
 	private String allowedImageExtensions = "jpg,jpeg,png,webp,gif";
+	private long maxDocumentSizeBytes = 10 * 1024 * 1024;
+	private String allowedDocumentContentTypes =
+			"application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+	private String allowedDocumentExtensions = "pdf,doc,docx";
 
 	public long getMaxImageSizeBytes() {
 		return maxImageSizeBytes;
@@ -40,12 +44,44 @@ public class FileUploadProperties {
 		this.allowedImageExtensions = allowedImageExtensions;
 	}
 
+	public long getMaxDocumentSizeBytes() {
+		return maxDocumentSizeBytes;
+	}
+
+	public void setMaxDocumentSizeBytes(long maxDocumentSizeBytes) {
+		this.maxDocumentSizeBytes = maxDocumentSizeBytes;
+	}
+
+	public String getAllowedDocumentContentTypes() {
+		return allowedDocumentContentTypes;
+	}
+
+	public void setAllowedDocumentContentTypes(String allowedDocumentContentTypes) {
+		this.allowedDocumentContentTypes = allowedDocumentContentTypes;
+	}
+
+	public String getAllowedDocumentExtensions() {
+		return allowedDocumentExtensions;
+	}
+
+	public void setAllowedDocumentExtensions(String allowedDocumentExtensions) {
+		this.allowedDocumentExtensions = allowedDocumentExtensions;
+	}
+
 	public Set<String> allowedImageContentTypeSet() {
 		return splitToSet(allowedImageContentTypes);
 	}
 
 	public Set<String> allowedImageExtensionSet() {
 		return splitToSet(allowedImageExtensions);
+	}
+
+	public Set<String> allowedDocumentContentTypeSet() {
+		return splitToSet(allowedDocumentContentTypes);
+	}
+
+	public Set<String> allowedDocumentExtensionSet() {
+		return splitToSet(allowedDocumentExtensions);
 	}
 
 	private Set<String> splitToSet(String value) {

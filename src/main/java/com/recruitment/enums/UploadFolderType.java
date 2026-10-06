@@ -12,7 +12,8 @@ public enum UploadFolderType {
 	INDUSTRY_GROUP("industry-groups"),
 	INDUSTRY("industries"),
 	COMPANY_LOGO("company-logos"),
-	COMPANY_BACKGROUND("company-backgrounds");
+	COMPANY_BACKGROUND("company-backgrounds"),
+	CV("cvs");
 
 	private final String folder;
 

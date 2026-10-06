@@ -1,5 +1,6 @@
 package com.recruitment.entity;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,15 @@ public class Company extends BaseEntity {
 
 	@Column(nullable = false, length = 20)
 	private String status = CompanyStatusEnum.PENDING.name();
+
+	@Column(name = "rejection_reason", length = 1000)
+	private String rejectionReason;
+
+	@Column(name = "rejected_at")
+	private Instant rejectedAt;
+
+	@Column(name = "approved_at")
+	private Instant approvedAt;
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@BatchSize(size = 20)
@@ -159,6 +169,30 @@ public class Company extends BaseEntity {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public String getRejectionReason() {
+		return rejectionReason;
+	}
+
+	public void setRejectionReason(String rejectionReason) {
+		this.rejectionReason = rejectionReason;
+	}
+
+	public Instant getRejectedAt() {
+		return rejectedAt;
+	}
+
+	public void setRejectedAt(Instant rejectedAt) {
+		this.rejectedAt = rejectedAt;
+	}
+
+	public Instant getApprovedAt() {
+		return approvedAt;
+	}
+
+	public void setApprovedAt(Instant approvedAt) {
+		this.approvedAt = approvedAt;
 	}
 
 	public List<Industry> getIndustries() {

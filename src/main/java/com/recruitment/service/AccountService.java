@@ -142,7 +142,7 @@ public class AccountService {
 	private Map<Long, List<CompanyMember>> loadMembershipsByUserId(List<User> users) {
 		List<Long> employerIds = users.stream()
 				.filter(user -> UserTypeEnum.EMPLOYER.name().equals(user.getType()))
-				.map(User::getId)
+				.map(user -> user.getId())
 				.toList();
 		if (employerIds.isEmpty()) {
 			return Collections.emptyMap();

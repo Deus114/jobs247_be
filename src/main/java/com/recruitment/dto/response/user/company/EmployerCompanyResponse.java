@@ -19,6 +19,10 @@ public record EmployerCompanyResponse(
 		String taxCode,
 		String description,
 		String status,
+		String rejectionReason,
+		Instant rejectedAt,
+		Instant approvedAt,
+		boolean applied,
 		Instant createdAt,
 		Instant updatedAt) {
 }

@@ -52,6 +52,10 @@ public final class Constants {
 
 	public static final String ADMIN_COMPANIES_BASE_PATH = "/api/v1/admin/companies";
 
+	// --- Admin Job API ---
+
+	public static final String ADMIN_JOBS_BASE_PATH = "/api/v1/admin/jobs";
+
 	// --- User Auth API ---
 
 	public static final String AUTH_BASE_PATH = "/api/v1/auth";
@@ -63,26 +67,32 @@ public final class Constants {
 	public static final String AUTH_LOGOUT_PATH = AUTH_BASE_PATH + "/logout";
 	public static final String AUTH_ME_PATH = AUTH_BASE_PATH + "/me";
 
+	// --- Public catalog ---
+
+	public static final String PUBLIC_JOBS_BASE_PATH = "/api/v1/jobs";
+	public static final String PUBLIC_COMPANIES_BASE_PATH = "/api/v1/companies";
+
 	// --- Employer / job seeker API ---
 
 	public static final String EMPLOYER_API_BASE_PATH = "/api/v1/employer";
 	public static final String JOB_SEEKER_API_BASE_PATH = "/api/v1/job-seeker";
 	public static final String EMPLOYER_COMPANIES_BASE_PATH = EMPLOYER_API_BASE_PATH + "/companies";
-	public static final String EMPLOYER_COMPANY_JOIN_REQUESTS_MINE_PATH = EMPLOYER_COMPANIES_BASE_PATH
-			+ "/join-requests/mine";
+	public static final String EMPLOYER_JOBS_BASE_PATH = EMPLOYER_API_BASE_PATH + "/jobs";
+	public static final String EMPLOYER_APPLICATIONS_BASE_PATH = EMPLOYER_API_BASE_PATH + "/applications";
+	public static final String EMPLOYER_JOIN_REQUESTS_BASE_PATH = EMPLOYER_API_BASE_PATH + "/join-requests";
+	public static final String JOB_SEEKER_JOB_APPLICATIONS_BASE_PATH = JOB_SEEKER_API_BASE_PATH
+			+ "/jobs/{jobId}/applications";
+	public static final String JOB_SEEKER_APPLICATIONS_BASE_PATH = JOB_SEEKER_API_BASE_PATH + "/applications";
+	public static final String JOB_SEEKER_SAVED_JOBS_BASE_PATH = JOB_SEEKER_API_BASE_PATH + "/saved-jobs";
+	public static final String ADMIN_APPLICATIONS_BASE_PATH = "/api/v1/admin/applications";
 	public static final int EMPLOYER_MAX_COMPANIES = 3;
 
 	public static final String ADMIN_API_PATTERN = "/api/v1/admin/**";
 
-	// --- Admin Auth Cookie ---
+	// --- Auth Cookie ---
 
 	public static final String ADMIN_REFRESH_TOKEN_COOKIE_NAME = "admin_refresh_token";
-	public static final String ADMIN_REFRESH_TOKEN_COOKIE_PATH = ADMIN_AUTH_BASE_PATH;
-	public static final int ADMIN_REFRESH_TOKEN_COOKIE_MAX_AGE = 259200;
-
 	public static final String USER_REFRESH_TOKEN_COOKIE_NAME = "user_refresh_token";
-	public static final String USER_REFRESH_TOKEN_COOKIE_PATH = AUTH_BASE_PATH;
-	public static final int USER_REFRESH_TOKEN_COOKIE_MAX_AGE = 259200;
 
 	// --- Swagger ---
 
