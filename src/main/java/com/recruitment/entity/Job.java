@@ -36,6 +36,9 @@ public class Job extends BaseEntity {
 	@Column(nullable = false, length = 255)
 	private String title;
 
+	@Column(length = 200)
+	private String slug;
+
 	@ManyToMany(fetch = FetchType.LAZY)
 	@BatchSize(size = 20)
 	@JoinTable(
@@ -144,6 +147,14 @@ public class Job extends BaseEntity {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getSlug() {
+		return slug;
+	}
+
+	public void setSlug(String slug) {
+		this.slug = slug;
 	}
 
 	public List<Industry> getIndustries() {

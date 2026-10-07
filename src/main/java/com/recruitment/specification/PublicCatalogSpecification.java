@@ -1,12 +1,15 @@
 package com.recruitment.specification;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.recruitment.dto.request.common.PublicCompanyFilterRequest;
@@ -45,30 +48,40 @@ public final class PublicCatalogSpecification {
 				predicate = criteriaBuilder.and(predicate,
 						criteriaBuilder.equal(root.get("company").get("id"), filter.companyId()));
 			}
-			if (filter.industryId() != null) {
+
+			boolean filterByIndustryGroup = hasIds(filter.industryGroupIds());
+			boolean filterByIndustry = hasIds(filter.industryIds());
+			if (filterByIndustryGroup || filterByIndustry) {
 				Join<?, ?> industries = root.join("industries");
-				predicate = criteriaBuilder.and(predicate,
-						criteriaBuilder.equal(industries.get("id"), filter.industryId()));
+				if (filterByIndustryGroup) {
+					predicate = criteriaBuilder.and(predicate,
+							industries.get("industryGroup").get("id").in(filter.industryGroupIds()));
+				}
+				if (filterByIndustry) {
+					predicate = criteriaBuilder.and(predicate,
+							industries.get("id").in(filter.industryIds()));
+				}
 			}
-			if (filter.provinceId() != null) {
+			if (hasIds(filter.provinceIds())) {
 				Join<?, ?> provinces = root.join("provinces");
 				predicate = criteriaBuilder.and(predicate,
-						criteriaBuilder.equal(provinces.get("id"), filter.provinceId()));
+						provinces.get("id").in(filter.provinceIds()));
 			}
-			if (filter.educationLevelId() != null) {
+			if (hasIds(filter.educationLevelIds())) {
 				Join<?, ?> educationLevels = root.join("educationLevels");
 				predicate = criteriaBuilder.and(predicate,
-						criteriaBuilder.equal(educationLevels.get("id"), filter.educationLevelId()));
+						educationLevels.get("id").in(filter.educationLevelIds()));
 			}
-			if (StringUtils.hasText(filter.employmentType())) {
+
+			List<String> employmentTypes = normalizeEnums(filter.employmentTypes());
+			if (!employmentTypes.isEmpty()) {
 				Join<?, ?> types = root.join("employmentTypes");
-				predicate = criteriaBuilder.and(predicate,
-						criteriaBuilder.equal(types, filter.employmentType().trim().toUpperCase()));
+				predicate = criteriaBuilder.and(predicate, types.in(employmentTypes));
 			}
-			if (StringUtils.hasText(filter.experienceLevel())) {
+			List<String> experienceLevels = normalizeEnums(filter.experienceLevels());
+			if (!experienceLevels.isEmpty()) {
 				Join<?, ?> levels = root.join("experienceLevels");
-				predicate = criteriaBuilder.and(predicate,
-						criteriaBuilder.equal(levels, filter.experienceLevel().trim().toUpperCase()));
+				predicate = criteriaBuilder.and(predicate, levels.in(experienceLevels));
 			}
 			if (filter.hot() != null) {
 				predicate = criteriaBuilder.and(predicate,
@@ -124,9 +137,9 @@ public final class PublicCatalogSpecification {
 				predicate = criteriaBuilder.and(predicate,
 						criteriaBuilder.equal(root.get("province").get("id"), filter.provinceId()));
 			}
-			if (StringUtils.hasText(filter.size())) {
+			if (StringUtils.hasText(filter.companySize())) {
 				predicate = criteriaBuilder.and(predicate,
-						criteriaBuilder.equal(root.get("size"), filter.size().trim().toUpperCase()));
+						criteriaBuilder.equal(root.get("size"), filter.companySize().trim().toUpperCase()));
 			}
 			if (filter.industryId() != null) {
 				if (query != null) {
@@ -138,5 +151,26 @@ public final class PublicCatalogSpecification {
 			}
 			return predicate;
 		};
+	}
+
+	private static boolean hasIds(List<Long> ids) {
+		return !CollectionUtils.isEmpty(ids);
+	}
+
+	private static List<String> normalizeEnums(List<String> values) {
+		if (CollectionUtils.isEmpty(values)) {
+			return List.of();
+		}
+		List<String> normalized = new ArrayList<>();
+		for (String value : values) {
+			if (!StringUtils.hasText(value)) {
+				continue;
+			}
+			String upper = value.trim().toUpperCase(Locale.ROOT);
+			if (!normalized.contains(upper)) {
+				normalized.add(upper);
+			}
+		}
+		return normalized;
 	}
 }

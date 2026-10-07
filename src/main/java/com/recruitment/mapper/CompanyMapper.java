@@ -11,6 +11,7 @@ import com.recruitment.entity.CompanyJoinRequest;
 import com.recruitment.entity.CompanyMember;
 import com.recruitment.entity.User;
 import com.recruitment.util.helper.LocaleTextHelper;
+import com.recruitment.util.helper.SlugHelper;
 
 @Component
 public class CompanyMapper {
@@ -18,6 +19,7 @@ public class CompanyMapper {
 	public EmployerCompanyResponse toResponse(Company company, boolean applied) {
 		return new EmployerCompanyResponse(
 				company.getId(),
+				SlugHelper.resolve(company.getSlug(), company.getName()),
 				company.getName(),
 				company.getSize(),
 				company.getProvince().getId(),

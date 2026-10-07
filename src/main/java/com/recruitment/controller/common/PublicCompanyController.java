@@ -45,15 +45,19 @@ public class PublicCompanyController {
 		return publicCompanyService.getCompanies(filter, pageable);
 	}
 
-	@GetMapping("/{id}")
+	@GetMapping("/{slug}/{id}")
 	public ResponseEntity<ApiResponse<PublicCompanyResponse>> getCompany(
+			@PathVariable
+			String slug,
 			@PathVariable
 			Long id) {
 		return publicCompanyService.getCompany(id);
 	}
 
-	@GetMapping("/{id}/jobs")
+	@GetMapping("/{slug}/{id}/jobs")
 	public ResponseEntity<ApiResponse<PaginatedResponse<PublicJobResponse>>> getCompanyJobs(
+			@PathVariable
+			String slug,
 			@PathVariable
 			Long id,
 			@ParameterObject

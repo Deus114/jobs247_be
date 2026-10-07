@@ -15,6 +15,7 @@ import com.recruitment.entity.Job;
 import com.recruitment.entity.Province;
 import com.recruitment.entity.User;
 import com.recruitment.util.helper.LocaleTextHelper;
+import com.recruitment.util.helper.SlugHelper;
 
 @Component
 public class JobMapper {
@@ -24,8 +25,10 @@ public class JobMapper {
 		User creator = job.getCreatedByUser();
 		return new EmployerJobResponse(
 				job.getId(),
+				SlugHelper.resolve(job.getSlug(), job.getTitle()),
 				company.getId(),
 				company.getName(),
+				SlugHelper.resolve(company.getSlug(), company.getName()),
 				company.getLogo(),
 				creator.getId(),
 				creator.getName(),
@@ -62,8 +65,10 @@ public class JobMapper {
 		User creator = job.getCreatedByUser();
 		return new AdminJobResponse(
 				job.getId(),
+				SlugHelper.resolve(job.getSlug(), job.getTitle()),
 				company.getId(),
 				company.getName(),
+				SlugHelper.resolve(company.getSlug(), company.getName()),
 				company.getLogo(),
 				creator.getId(),
 				creator.getName(),
@@ -95,12 +100,14 @@ public class JobMapper {
 				job.getUpdatedAt());
 	}
 
-	public PublicJobResponse toPublicResponse(Job job, boolean applied, long applicationCount) {
+	public PublicJobResponse toPublicResponse(Job job, boolean applied, boolean saved, long applicationCount) {
 		Company company = job.getCompany();
 		return new PublicJobResponse(
 				job.getId(),
+				SlugHelper.resolve(job.getSlug(), job.getTitle()),
 				company.getId(),
 				company.getName(),
+				SlugHelper.resolve(company.getSlug(), company.getName()),
 				company.getLogo(),
 				company.getAddress(),
 				job.getTitle(),
@@ -122,9 +129,44 @@ public class JobMapper {
 				job.getApplicantQuestion(),
 				job.isHot(),
 				applied,
+				saved,
 				applicationCount,
 				job.getCreatedAt(),
 				job.getUpdatedAt());
+	}
+
+	public PublicJobResponse withViewerFlags(PublicJobResponse source, boolean applied, boolean saved) {
+		return new PublicJobResponse(
+				source.id(),
+				source.slug(),
+				source.companyId(),
+				source.companyName(),
+				source.companySlug(),
+				source.companyLogo(),
+				source.companyAddress(),
+				source.title(),
+				source.industries(),
+				source.educationLevels(),
+				source.provinces(),
+				source.employmentTypes(),
+				source.experienceLevels(),
+				source.experienceYears(),
+				source.salaryMin(),
+				source.salaryMax(),
+				source.salaryNegotiable(),
+				source.deadline(),
+				source.workLocation(),
+				source.workingTime(),
+				source.description(),
+				source.requirements(),
+				source.benefits(),
+				source.applicantQuestion(),
+				source.hot(),
+				applied,
+				saved,
+				source.applicationCount(),
+				source.createdAt(),
+				source.updatedAt());
 	}
 
 	private List<JobCatalogItemResponse> mapIndustries(List<Industry> industries) {

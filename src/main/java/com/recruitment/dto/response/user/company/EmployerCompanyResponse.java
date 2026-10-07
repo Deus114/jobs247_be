@@ -5,6 +5,7 @@ import java.util.List;
 
 public record EmployerCompanyResponse(
 		Long id,
+		String slug,
 		String name,
 		String size,
 		Long provinceId,

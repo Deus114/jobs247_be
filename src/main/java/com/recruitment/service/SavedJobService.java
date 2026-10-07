@@ -105,10 +105,10 @@ public class SavedJobService {
 	@Transactional
 	public ResponseEntity<ApiResponse<Void>> unsave(Long jobId, Jwt jwt) {
 		User seeker = requireJobSeeker(jwt);
-		if (!savedJobRepository.existsByUserIdAndJobId(seeker.getId(), jobId)) {
+		int deleted = savedJobRepository.hardDeleteByUserIdAndJobId(seeker.getId(), jobId);
+		if (deleted == 0) {
 			throw new ResourceNotFoundException("error.resource.saved-job", "jobId", jobId);
 		}
-		savedJobRepository.hardDeleteByUserIdAndJobId(seeker.getId(), jobId);
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("saved-job.delete.success"),
 				null));

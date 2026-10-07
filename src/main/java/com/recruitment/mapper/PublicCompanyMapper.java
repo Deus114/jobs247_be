@@ -10,6 +10,7 @@ import com.recruitment.dto.response.common.PublicCompanyResponse;
 import com.recruitment.entity.Company;
 import com.recruitment.entity.Industry;
 import com.recruitment.util.helper.LocaleTextHelper;
+import com.recruitment.util.helper.SlugHelper;
 
 @Component
 public class PublicCompanyMapper {
@@ -25,6 +26,7 @@ public class PublicCompanyMapper {
 						.toList();
 		return new PublicCompanyResponse(
 				company.getId(),
+				SlugHelper.resolve(company.getSlug(), company.getName()),
 				company.getName(),
 				company.getSize(),
 				company.getProvince().getId(),

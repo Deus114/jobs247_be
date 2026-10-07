@@ -3,6 +3,7 @@ package com.recruitment.service;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import com.recruitment.exception.BusinessRuleException;
 import com.recruitment.exception.ResourceNotFoundException;
 import com.recruitment.mapper.BusinessConfigMapper;
 import com.recruitment.repository.BusinessConfigRepository;
+import com.recruitment.util.constant.CacheNames;
 import com.recruitment.util.constant.Constants;
 import com.recruitment.util.helper.FileHelper;
 import com.recruitment.util.helper.NumberHelper;
@@ -29,25 +31,27 @@ public class BusinessConfigService {
 
 	private final BusinessConfigRepository businessConfigRepository;
 	private final BusinessConfigMapper businessConfigMapper;
+	private final PublicCatalogCacheService publicCatalogCacheService;
 	private final MessageService messageService;
 	private final FileStorageService fileStorageService;
 
 	public BusinessConfigService(
 			BusinessConfigRepository businessConfigRepository,
 			BusinessConfigMapper businessConfigMapper,
+			PublicCatalogCacheService publicCatalogCacheService,
 			MessageService messageService,
 			FileStorageService fileStorageService) {
 		this.businessConfigRepository = businessConfigRepository;
 		this.businessConfigMapper = businessConfigMapper;
+		this.publicCatalogCacheService = publicCatalogCacheService;
 		this.messageService = messageService;
 		this.fileStorageService = fileStorageService;
 	}
 
 	public ResponseEntity<ApiResponse<BusinessConfigPublicResponse>> getPublic() {
-		BusinessConfig config = getSingleton();
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("business-config.get.success"),
-				businessConfigMapper.toPublicResponse(config)));
+				publicCatalogCacheService.businessConfig()));
 	}
 
 	public ResponseEntity<ApiResponse<BusinessConfigResponse>> getAdmin() {
@@ -58,6 +62,7 @@ public class BusinessConfigService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.BUSINESS_CONFIG, allEntries = true)
 	public ResponseEntity<ApiResponse<BusinessConfigResponse>> update(
 			UpdateBusinessConfigRequest request,
 			String currentUsername) {

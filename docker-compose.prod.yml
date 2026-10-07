@@ -16,6 +16,8 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3306:3306"
     networks:
       - jobs247-network
     healthcheck:

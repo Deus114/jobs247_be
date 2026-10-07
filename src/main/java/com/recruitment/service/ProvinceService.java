@@ -2,6 +2,7 @@ package com.recruitment.service;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import com.recruitment.exception.ResourceNotFoundException;
 import com.recruitment.mapper.ProvinceMapper;
 import com.recruitment.repository.ProvinceRepository;
 import com.recruitment.specification.ProvinceSpecification;
+import com.recruitment.util.constant.CacheNames;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
 
@@ -34,29 +36,28 @@ public class ProvinceService {
 	private final ProvinceRepository provinceRepository;
 	private final ProvinceMapper provinceMapper;
 	private final SoftDeletedPageQuery softDeletedPageQuery;
+	private final PublicCatalogCacheService publicCatalogCacheService;
 	private final MessageService messageService;
 
 	public ProvinceService(
 			ProvinceRepository provinceRepository,
 			ProvinceMapper provinceMapper,
 			SoftDeletedPageQuery softDeletedPageQuery,
+			PublicCatalogCacheService publicCatalogCacheService,
 			MessageService messageService) {
 		this.provinceRepository = provinceRepository;
 		this.provinceMapper = provinceMapper;
 		this.softDeletedPageQuery = softDeletedPageQuery;
+		this.publicCatalogCacheService = publicCatalogCacheService;
 		this.messageService = messageService;
 	}
 
 	@Transactional(readOnly = true)
 	public ResponseEntity<ApiResponse<PaginatedResponse<ProvincePublicResponse>>> getPublicList(
 			Pageable pageable) {
-		Page<ProvincePublicResponse> resultPage = provinceRepository
-				.findAll(ProvinceSpecification.publicActive(), pageable)
-				.map(provinceMapper::toPublicResponse);
-
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("province.public-list.success"),
-				PaginatedResponse.fromPage(resultPage)));
+				publicCatalogCacheService.provinces(pageable)));
 	}
 
 	@Transactional(readOnly = true)
@@ -94,6 +95,7 @@ public class ProvinceService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.PROVINCES, allEntries = true)
 	public ResponseEntity<ApiResponse<ProvinceResponse>> create(
 			CreateProvinceRequest request,
 			String currentUsername) {
@@ -117,6 +119,7 @@ public class ProvinceService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.PROVINCES, allEntries = true)
 	public ResponseEntity<ApiResponse<ProvinceResponse>> update(
 			Long id,
 			UpdateProvinceRequest request,
@@ -147,6 +150,7 @@ public class ProvinceService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.PROVINCES, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> softDelete(Long id, String currentUsername) {
 		Province province = findActiveById(id);
 		province.setDeletedBy(currentUsername);
@@ -159,6 +163,7 @@ public class ProvinceService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.PROVINCES, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> restore(Long id, String currentUsername) {
 		int restored = provinceRepository.restoreById(id);
 		if (restored == 0) {
@@ -175,6 +180,7 @@ public class ProvinceService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.PROVINCES, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> permanentDelete(Long id) {
 		provinceRepository.findSoftDeletedById(id)
 				.orElseThrow(() -> new BusinessRuleException("error.province.not-soft-deleted", id));

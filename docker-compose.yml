@@ -24,6 +24,21 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    container_name: jobs247-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 48mb --maxmemory-policy allkeys-lru --save ""
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
   rabbitmq:
     image: rabbitmq:3.13-management
     container_name: jobs247-rabbitmq
@@ -49,6 +64,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     env_file:
@@ -58,10 +75,13 @@ services:
       DB_PORT: 3306
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       MAIL_QUEUE_ENABLED: "true"
     ports:
       - "8080:8080"
 
 volumes:
   mysql_data:
+  redis_data:
   rabbitmq_data:

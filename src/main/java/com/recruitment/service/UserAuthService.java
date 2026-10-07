@@ -74,6 +74,7 @@ public class UserAuthService {
 	private final MessageService messageService;
 	private final FileStorageService fileStorageService;
 	private final RefreshCookieHelper refreshCookieHelper;
+	private final OtpRateLimitService otpRateLimitService;
 	private final Duration otpTtl;
 	private final Duration otpResendCooldown;
 
@@ -89,6 +90,7 @@ public class UserAuthService {
 			MessageService messageService,
 			FileStorageService fileStorageService,
 			RefreshCookieHelper refreshCookieHelper,
+			OtpRateLimitService otpRateLimitService,
 			@Value("${app.auth.otp-expiration}")
 			long otpExpirationMillis,
 			@Value("${app.auth.otp-resend-cooldown}")
@@ -104,6 +106,7 @@ public class UserAuthService {
 		this.messageService = messageService;
 		this.fileStorageService = fileStorageService;
 		this.refreshCookieHelper = refreshCookieHelper;
+		this.otpRateLimitService = otpRateLimitService;
 		this.otpTtl = Duration.ofMillis(otpExpirationMillis);
 		this.otpResendCooldown = Duration.ofMillis(otpResendCooldownMillis);
 	}
@@ -113,13 +116,14 @@ public class UserAuthService {
 		String email = normalizeEmail(request.email());
 		rejectIfEmailTaken(email);
 
+		if (!otpRateLimitService.tryAcquire(EmailOtpPurposeEnum.REGISTER.name(), email, otpResendCooldown)) {
+			throw new BusinessRuleException("error.auth.otp.resend-too-soon");
+		}
+
 		emailOtpRepository
 				.findFirstByEmailAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(
 						email, EmailOtpPurposeEnum.REGISTER.name())
 				.ifPresent(existing -> {
-					if (existing.getCreatedAt().isAfter(Instant.now().minus(otpResendCooldown))) {
-						throw new BusinessRuleException("error.auth.otp.resend-too-soon");
-					}
 					existing.setConsumedAt(Instant.now());
 					emailOtpRepository.save(existing);
 				});

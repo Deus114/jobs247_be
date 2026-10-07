@@ -9,6 +9,7 @@ import com.recruitment.entity.Job;
 import com.recruitment.entity.JobApplication;
 import com.recruitment.entity.SavedJob;
 import com.recruitment.entity.User;
+import com.recruitment.util.helper.SlugHelper;
 
 @Component
 public class JobApplicationMapper {
@@ -47,13 +48,15 @@ public class JobApplicationMapper {
 	public SavedJobResponse toSavedJobResponse(SavedJob savedJob, boolean applied, long applicationCount) {
 		Job job = savedJob.getJob();
 		Company company = job.getCompany();
-		var catalog = jobMapper.toPublicResponse(job, applied, applicationCount);
+		var catalog = jobMapper.toPublicResponse(job, applied, true, applicationCount);
 		return new SavedJobResponse(
 				savedJob.getId(),
 				job.getId(),
+				SlugHelper.resolve(job.getSlug(), job.getTitle()),
 				job.getTitle(),
 				company.getId(),
 				company.getName(),
+				SlugHelper.resolve(company.getSlug(), company.getName()),
 				company.getLogo(),
 				catalog.provinces(),
 				catalog.employmentTypes(),

@@ -8,8 +8,10 @@ import com.recruitment.dto.response.common.JobCatalogItemResponse;
 
 public record AdminJobResponse(
 		Long id,
+		String slug,
 		Long companyId,
 		String companyName,
+		String companySlug,
 		String companyLogo,
 		Long createdByUserId,
 		String createdByUserName,

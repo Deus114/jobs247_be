@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ import com.recruitment.mapper.IndustryMapper;
 import com.recruitment.repository.IndustryGroupRepository;
 import com.recruitment.repository.IndustryRepository;
 import com.recruitment.specification.IndustrySpecification;
+import com.recruitment.util.constant.CacheNames;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.FileHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
@@ -93,6 +95,7 @@ public class IndustryService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.INDUSTRY_GROUPS, allEntries = true)
 	public ResponseEntity<ApiResponse<IndustryResponse>> create(
 			CreateIndustryRequest request,
 			String currentUsername) {
@@ -126,6 +129,7 @@ public class IndustryService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.INDUSTRY_GROUPS, allEntries = true)
 	public ResponseEntity<ApiResponse<IndustryResponse>> update(
 			Long id,
 			UpdateIndustryRequest request,
@@ -172,6 +176,7 @@ public class IndustryService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.INDUSTRY_GROUPS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> softDelete(Long id, String currentUsername) {
 		Industry industry = findActiveById(id);
 		industry.setDeletedBy(currentUsername);
@@ -184,6 +189,7 @@ public class IndustryService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.INDUSTRY_GROUPS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> restore(Long id, String currentUsername) {
 		int restored = industryRepository.restoreById(id);
 		if (restored == 0) {
@@ -204,6 +210,7 @@ public class IndustryService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.INDUSTRY_GROUPS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> permanentDelete(Long id) {
 		industryRepository.findSoftDeletedById(id)
 				.orElseThrow(() -> new BusinessRuleException("error.industry.not-soft-deleted", id));

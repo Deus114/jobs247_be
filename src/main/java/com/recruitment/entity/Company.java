@@ -24,6 +24,9 @@ public class Company extends BaseEntity {
 	@Column(nullable = false, length = 255)
 	private String name;
 
+	@Column(length = 200)
+	private String slug;
+
 	@Column(nullable = false, length = 30)
 	private String size;
 
@@ -81,6 +84,14 @@ public class Company extends BaseEntity {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getSlug() {
+		return slug;
+	}
+
+	public void setSlug(String slug) {
+		this.slug = slug;
 	}
 
 	public String getSize() {

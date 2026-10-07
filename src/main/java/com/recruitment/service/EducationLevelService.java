@@ -2,6 +2,7 @@ package com.recruitment.service;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ import com.recruitment.exception.ResourceNotFoundException;
 import com.recruitment.mapper.EducationLevelMapper;
 import com.recruitment.repository.EducationLevelRepository;
 import com.recruitment.specification.EducationLevelSpecification;
+import com.recruitment.util.constant.CacheNames;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
 
@@ -33,29 +35,28 @@ public class EducationLevelService {
 	private final EducationLevelRepository educationLevelRepository;
 	private final EducationLevelMapper educationLevelMapper;
 	private final SoftDeletedPageQuery softDeletedPageQuery;
+	private final PublicCatalogCacheService publicCatalogCacheService;
 	private final MessageService messageService;
 
 	public EducationLevelService(
 			EducationLevelRepository educationLevelRepository,
 			EducationLevelMapper educationLevelMapper,
 			SoftDeletedPageQuery softDeletedPageQuery,
+			PublicCatalogCacheService publicCatalogCacheService,
 			MessageService messageService) {
 		this.educationLevelRepository = educationLevelRepository;
 		this.educationLevelMapper = educationLevelMapper;
 		this.softDeletedPageQuery = softDeletedPageQuery;
+		this.publicCatalogCacheService = publicCatalogCacheService;
 		this.messageService = messageService;
 	}
 
 	@Transactional(readOnly = true)
 	public ResponseEntity<ApiResponse<PaginatedResponse<EducationLevelPublicResponse>>> getPublicList(
 			Pageable pageable) {
-		Page<EducationLevelPublicResponse> resultPage = educationLevelRepository
-				.findAll(EducationLevelSpecification.publicActive(), pageable)
-				.map(educationLevelMapper::toPublicResponse);
-
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("education-level.public-list.success"),
-				PaginatedResponse.fromPage(resultPage)));
+				publicCatalogCacheService.educationLevels(pageable)));
 	}
 
 	@Transactional(readOnly = true)
@@ -90,6 +91,7 @@ public class EducationLevelService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.EDUCATION_LEVELS, allEntries = true)
 	public ResponseEntity<ApiResponse<EducationLevelResponse>> create(
 			CreateEducationLevelRequest request,
 			String currentUsername) {
@@ -114,6 +116,7 @@ public class EducationLevelService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.EDUCATION_LEVELS, allEntries = true)
 	public ResponseEntity<ApiResponse<EducationLevelResponse>> update(
 			Long id,
 			UpdateEducationLevelRequest request,
@@ -145,6 +148,7 @@ public class EducationLevelService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.EDUCATION_LEVELS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> softDelete(Long id, String currentUsername) {
 		EducationLevel educationLevel = findActiveById(id);
 		educationLevel.setDeletedBy(currentUsername);
@@ -157,6 +161,7 @@ public class EducationLevelService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.EDUCATION_LEVELS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> restore(Long id, String currentUsername) {
 		int restored = educationLevelRepository.restoreById(id);
 		if (restored == 0) {
@@ -173,6 +178,7 @@ public class EducationLevelService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.EDUCATION_LEVELS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> permanentDelete(Long id) {
 		educationLevelRepository.findSoftDeletedById(id)
 				.orElseThrow(() -> new BusinessRuleException("error.education-level.not-soft-deleted", id));

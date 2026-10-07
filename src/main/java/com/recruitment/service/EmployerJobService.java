@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -41,9 +42,11 @@ import com.recruitment.repository.JobRepository;
 import com.recruitment.repository.UserRepository;
 import com.recruitment.security.JwtTokenProvider;
 import com.recruitment.specification.JobSpecification;
+import com.recruitment.util.constant.CacheNames;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.ApprovalStatusHelper;
 import com.recruitment.util.helper.JobCatalogHelper;
+import com.recruitment.util.helper.SlugHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
 
 @Service
@@ -171,6 +174,7 @@ public class EmployerJobService {
 		job.setCompany(company);
 		job.setCreatedByUser(employer);
 		job.setTitle(request.title().trim());
+		job.setSlug(SlugHelper.from(request.title()));
 		job.setIndustries(jobCatalogHelper.requireActiveIndustries(request.industryIds()));
 		job.setEducationLevels(jobCatalogHelper.requireActiveEducationLevels(request.educationLevelIds()));
 		job.setProvinces(jobCatalogHelper.requireActiveProvinces(request.provinceIds()));
@@ -200,6 +204,7 @@ public class EmployerJobService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.HOT_JOBS, allEntries = true)
 	public ResponseEntity<ApiResponse<EmployerJobResponse>> update(
 			Long id,
 			UpdateEmployerJobRequest request,
@@ -211,6 +216,7 @@ public class EmployerJobService {
 
 		if (StringUtils.hasText(request.title())) {
 			job.setTitle(request.title().trim());
+			job.setSlug(SlugHelper.from(request.title()));
 			contentChanged = true;
 		}
 		if (request.industryIds() != null) {
@@ -309,6 +315,7 @@ public class EmployerJobService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.HOT_JOBS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> softDelete(Long id, Jwt jwt) {
 		User employer = requireEmployer(jwt);
 		Job job = requireAccessibleJob(id, employer.getId());
@@ -321,6 +328,7 @@ public class EmployerJobService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.HOT_JOBS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> restore(Long id, Jwt jwt) {
 		User employer = requireEmployer(jwt);
 		Job softDeleted = jobRepository.findSoftDeletedById(id)

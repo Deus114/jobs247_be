@@ -60,6 +60,7 @@ import com.recruitment.security.JwtTokenProvider;
 import com.recruitment.specification.CompanySpecification;
 import com.recruitment.util.constant.Constants;
 import com.recruitment.util.helper.FileHelper;
+import com.recruitment.util.helper.SlugHelper;
 
 @Service
 public class CompanyService {
@@ -145,6 +146,7 @@ public class CompanyService {
 
 		Company company = new Company();
 		company.setName(request.name().trim());
+		company.setSlug(SlugHelper.from(request.name()));
 		company.setSize(size.name());
 		company.setProvince(province);
 		company.setAddress(request.address().trim());
@@ -191,6 +193,7 @@ public class CompanyService {
 
 		if (StringUtils.hasText(request.name())) {
 			company.setName(request.name().trim());
+			company.setSlug(SlugHelper.from(request.name()));
 		}
 		if (request.industryIds() != null) {
 			if (request.industryIds().isEmpty()) {

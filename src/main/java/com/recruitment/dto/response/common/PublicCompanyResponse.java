@@ -5,6 +5,7 @@ import java.util.List;
 
 public record PublicCompanyResponse(
 		Long id,
+		String slug,
 		String name,
 		String size,
 		Long provinceId,

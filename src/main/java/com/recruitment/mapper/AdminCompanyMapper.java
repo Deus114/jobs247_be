@@ -13,6 +13,7 @@ import com.recruitment.entity.Company;
 import com.recruitment.entity.CompanyMember;
 import com.recruitment.entity.User;
 import com.recruitment.util.helper.LocaleTextHelper;
+import com.recruitment.util.helper.SlugHelper;
 
 @Component
 public class AdminCompanyMapper {
@@ -57,6 +58,7 @@ public class AdminCompanyMapper {
 
 		return new AdminCompanyResponse(
 				id,
+				SlugHelper.resolve(company.getSlug(), name),
 				name,
 				size,
 				provinceId,

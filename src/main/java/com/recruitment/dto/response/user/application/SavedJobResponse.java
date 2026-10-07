@@ -9,9 +9,11 @@ import com.recruitment.dto.response.common.JobCatalogItemResponse;
 public record SavedJobResponse(
 		Long id,
 		Long jobId,
+		String jobSlug,
 		String jobTitle,
 		Long companyId,
 		String companyName,
+		String companySlug,
 		String companyLogo,
 		List<JobCatalogItemResponse> provinces,
 		List<String> employmentTypes,

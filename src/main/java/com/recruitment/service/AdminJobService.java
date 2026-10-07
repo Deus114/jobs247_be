@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import com.recruitment.mapper.JobMapper;
 import com.recruitment.repository.JobApplicationRepository;
 import com.recruitment.repository.JobRepository;
 import com.recruitment.specification.JobSpecification;
+import com.recruitment.util.constant.CacheNames;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.ApprovalStatusHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
@@ -116,6 +118,7 @@ public class AdminJobService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.HOT_JOBS, allEntries = true)
 	public ResponseEntity<ApiResponse<AdminJobResponse>> update(
 			Long id,
 			UpdateAdminJobRequest request,
@@ -153,6 +156,7 @@ public class AdminJobService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.HOT_JOBS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> softDelete(Long id, String currentUsername) {
 		Job job = findActiveById(id);
 		job.setDeletedBy(currentUsername);
@@ -164,6 +168,7 @@ public class AdminJobService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.HOT_JOBS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> restore(Long id, String currentUsername) {
 		int restored = jobRepository.restoreById(id);
 		if (restored == 0) {

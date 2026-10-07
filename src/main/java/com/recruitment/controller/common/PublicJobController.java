@@ -49,8 +49,10 @@ public class PublicJobController {
 		return publicJobService.getJobs(filter, pageable, OptionalJwtHelper.userId(jwt));
 	}
 
-	@GetMapping("/{id}")
+	@GetMapping("/{slug}/{id}")
 	public ResponseEntity<ApiResponse<PublicJobResponse>> getJob(
+			@PathVariable
+			String slug,
 			@PathVariable
 			Long id,
 			@Parameter(hidden = true)
@@ -59,8 +61,10 @@ public class PublicJobController {
 		return publicJobService.getJob(id, OptionalJwtHelper.userId(jwt));
 	}
 
-	@GetMapping("/{id}/related")
+	@GetMapping("/{slug}/{id}/related")
 	public ResponseEntity<ApiResponse<List<PublicJobResponse>>> getRelatedJobs(
+			@PathVariable
+			String slug,
 			@PathVariable
 			Long id,
 			@Parameter(hidden = true)

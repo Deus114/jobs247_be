@@ -6,8 +6,10 @@ import java.util.List;
 
 public record PublicJobResponse(
 		Long id,
+		String slug,
 		Long companyId,
 		String companyName,
+		String companySlug,
 		String companyLogo,
 		String companyAddress,
 		String title,
@@ -29,6 +31,7 @@ public record PublicJobResponse(
 		String applicantQuestion,
 		boolean hot,
 		boolean applied,
+		boolean saved,
 		long applicationCount,
 		Instant createdAt,
 		Instant updatedAt) {

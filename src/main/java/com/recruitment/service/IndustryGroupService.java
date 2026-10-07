@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,7 @@ import com.recruitment.mapper.IndustryGroupMapper;
 import com.recruitment.repository.IndustryGroupRepository;
 import com.recruitment.repository.IndustryRepository;
 import com.recruitment.specification.IndustryGroupSpecification;
+import com.recruitment.util.constant.CacheNames;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.FileHelper;
 import com.recruitment.util.helper.SoftDeletedPageQuery;
@@ -46,6 +48,7 @@ public class IndustryGroupService {
 	private final IndustryGroupMapper industryGroupMapper;
 	private final FileStorageService fileStorageService;
 	private final SoftDeletedPageQuery softDeletedPageQuery;
+	private final PublicCatalogCacheService publicCatalogCacheService;
 	private final MessageService messageService;
 
 	public IndustryGroupService(
@@ -54,25 +57,23 @@ public class IndustryGroupService {
 			IndustryGroupMapper industryGroupMapper,
 			FileStorageService fileStorageService,
 			SoftDeletedPageQuery softDeletedPageQuery,
+			PublicCatalogCacheService publicCatalogCacheService,
 			MessageService messageService) {
 		this.industryGroupRepository = industryGroupRepository;
 		this.industryRepository = industryRepository;
 		this.industryGroupMapper = industryGroupMapper;
 		this.fileStorageService = fileStorageService;
 		this.softDeletedPageQuery = softDeletedPageQuery;
+		this.publicCatalogCacheService = publicCatalogCacheService;
 		this.messageService = messageService;
 	}
 
 	@Transactional(readOnly = true)
 	public ResponseEntity<ApiResponse<PaginatedResponse<IndustryGroupPublicResponse>>> getPublicList(
 			Pageable pageable) {
-		Page<IndustryGroupPublicResponse> resultPage = industryGroupRepository
-				.findAll(IndustryGroupSpecification.publicActive(), pageable)
-				.map(industryGroupMapper::toPublicResponse);
-
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("industry-group.public-list.success"),
-				PaginatedResponse.fromPage(resultPage)));
+				publicCatalogCacheService.industryGroups(pageable)));
 	}
 
 	@Transactional(readOnly = true)
@@ -135,6 +136,7 @@ public class IndustryGroupService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.INDUSTRY_GROUPS, allEntries = true)
 	public ResponseEntity<ApiResponse<IndustryGroupResponse>> create(
 			CreateIndustryGroupRequest request,
 			String currentUsername) {
@@ -165,6 +167,7 @@ public class IndustryGroupService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.INDUSTRY_GROUPS, allEntries = true)
 	public ResponseEntity<ApiResponse<IndustryGroupResponse>> update(
 			Long id,
 			UpdateIndustryGroupRequest request,
@@ -209,6 +212,7 @@ public class IndustryGroupService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.INDUSTRY_GROUPS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> softDelete(Long id, String currentUsername) {
 		IndustryGroup group = findActiveById(id);
 
@@ -226,6 +230,7 @@ public class IndustryGroupService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.INDUSTRY_GROUPS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> restore(Long id, String currentUsername) {
 		int restored = industryGroupRepository.restoreById(id);
 		if (restored == 0) {
@@ -242,6 +247,7 @@ public class IndustryGroupService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = CacheNames.INDUSTRY_GROUPS, allEntries = true)
 	public ResponseEntity<ApiResponse<Void>> permanentDelete(Long id) {
 		industryGroupRepository.findSoftDeletedById(id)
 				.orElseThrow(() -> new BusinessRuleException("error.industry-group.not-soft-deleted", id));
