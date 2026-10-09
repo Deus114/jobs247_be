@@ -89,7 +89,8 @@ public class AdminJobService {
 									WHERE jel.job_id = j.id AND jel.experience_level = :experienceLevel))
 								AND (:active IS NULL OR j.active = :active)
 								AND (:hot IS NULL OR j.is_hot = :hot)
-								""",
+								"""
+								+ JobSpecification.NATIVE_SALARY_OVERLAP,
 						SoftDeletedPageQuery.params(
 								"status", blankToNullUpper(filter.status()),
 								"companyId", filter.companyId(),
@@ -98,7 +99,9 @@ public class AdminJobService {
 								"employmentType", blankToNullUpper(filter.employmentType()),
 								"experienceLevel", blankToNullUpper(filter.experienceLevel()),
 								"active", filter.active(),
-								"hot", filter.hot()),
+								"hot", filter.hot(),
+								"salaryFrom", filter.salaryFrom(),
+								"salaryTo", filter.salaryTo()),
 						"j.created_at DESC, j.id DESC",
 						pageable)
 				: jobRepository.findAll(JobSpecification.buildAdmin(filter), pageable);
@@ -198,6 +201,9 @@ public class AdminJobService {
 	}
 
 	private void validateFilters(AdminJobFilterRequest filter) {
+		if (filter.salaryFrom() != null && filter.salaryTo() != null && filter.salaryFrom() > filter.salaryTo()) {
+			throw new BusinessRuleException("error.job.salary.range");
+		}
 		if (StringUtils.hasText(filter.status())) {
 			JobStatusEnum.fromValue(filter.status())
 					.orElseThrow(() -> new BusinessRuleException("error.job.status.invalid", filter.status()));

@@ -23,7 +23,11 @@ public record PublicJobFilterRequest(
 
 		@Schema(description = "Một hoặc nhiều mức kinh nghiệm — ?experienceLevels=SENIOR&experienceLevels=LEAD") List<String> experienceLevels,
 
-		Boolean hot) {
+		Boolean hot,
+
+		@Schema(description = "Lương từ, cùng đơn vị với salaryMin/salaryMax. Bỏ trống nếu không giới hạn đầu dưới.") Integer salaryFrom,
+
+		@Schema(description = "Lương đến, cùng đơn vị với salaryMin/salaryMax. Bỏ trống nếu không giới hạn đầu trên.") Integer salaryTo) {
 
 	/** Chỉ cache Redis khi hot=true và không kèm filter khác. */
 	public boolean isHotOnlyListing() {
@@ -35,6 +39,8 @@ public record PublicJobFilterRequest(
 				&& CollectionUtils.isEmpty(provinceIds)
 				&& CollectionUtils.isEmpty(educationLevelIds)
 				&& CollectionUtils.isEmpty(employmentTypes)
-				&& CollectionUtils.isEmpty(experienceLevels);
+				&& CollectionUtils.isEmpty(experienceLevels)
+				&& salaryFrom == null
+				&& salaryTo == null;
 	}
 }

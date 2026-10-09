@@ -17,6 +17,8 @@ public record AdminJobFilterRequest(
 		Boolean hot,
 		LocalDate fromDate,
 		LocalDate toDate,
+		@Schema(description = "Lương từ, cùng đơn vị với salaryMin/salaryMax. Bỏ trống nếu không giới hạn đầu dưới.") Integer salaryFrom,
+		@Schema(description = "Lương đến, cùng đơn vị với salaryMin/salaryMax. Bỏ trống nếu không giới hạn đầu trên.") Integer salaryTo,
 		Boolean deleted) {
 
 	public boolean isDeleted() {

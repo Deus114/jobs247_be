@@ -64,7 +64,7 @@ public class PublicCompanyService {
 			Long viewerUserId) {
 		requirePublicCompany(companyId);
 		PublicJobFilterRequest filter = new PublicJobFilterRequest(
-				null, companyId, null, null, null, null, null, null, null);
+				null, companyId, null, null, null, null, null, null, null, null, null);
 		return publicJobService.getJobs(filter, pageable, viewerUserId);
 	}
 

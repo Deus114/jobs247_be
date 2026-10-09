@@ -86,6 +86,9 @@ public final class PublicCatalogSpecification {
 				predicate = criteriaBuilder.and(predicate,
 						criteriaBuilder.equal(root.get("hot"), filter.hot()));
 			}
+			predicate = criteriaBuilder.and(predicate,
+					JobSpecification.salaryOverlaps(
+							criteriaBuilder, root, filter.salaryFrom(), filter.salaryTo()));
 			return predicate;
 		};
 	}

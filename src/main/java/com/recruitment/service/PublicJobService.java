@@ -23,6 +23,7 @@ import com.recruitment.entity.Company;
 import com.recruitment.entity.Job;
 import com.recruitment.enums.CompanyStatusEnum;
 import com.recruitment.enums.JobStatusEnum;
+import com.recruitment.exception.BusinessRuleException;
 import com.recruitment.exception.ResourceNotFoundException;
 import com.recruitment.mapper.JobMapper;
 import com.recruitment.repository.JobApplicationRepository;
@@ -62,6 +63,9 @@ public class PublicJobService {
 			PublicJobFilterRequest filter,
 			Pageable pageable,
 			Long viewerUserId) {
+		if (filter.salaryFrom() != null && filter.salaryTo() != null && filter.salaryFrom() > filter.salaryTo()) {
+			throw new BusinessRuleException("error.job.salary.range");
+		}
 		if (filter.isHotOnlyListing()) {
 			return ResponseEntity.ok(ApiResponse.success(
 					messageService.get("job.list.success"),

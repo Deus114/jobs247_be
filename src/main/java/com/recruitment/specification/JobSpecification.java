@@ -3,8 +3,10 @@ package com.recruitment.specification;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
@@ -16,6 +18,17 @@ import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SearchHelper;
 
 public final class JobSpecification {
+
+	public static final String NATIVE_SALARY_OVERLAP = """
+			AND (
+				(:salaryFrom IS NULL AND :salaryTo IS NULL)
+				OR (
+					(j.salary_min IS NOT NULL OR j.salary_max IS NOT NULL)
+					AND (:salaryFrom IS NULL OR j.salary_max IS NULL OR j.salary_max >= :salaryFrom)
+					AND (:salaryTo IS NULL OR j.salary_min IS NULL OR j.salary_min <= :salaryTo)
+				)
+			)
+			""";
 
 	private JobSpecification() {
 	}
@@ -43,7 +56,9 @@ public final class JobSpecification {
 					filter.active(),
 					filter.hot(),
 					filter.fromDate(),
-					filter.toDate());
+					filter.toDate(),
+					filter.salaryFrom(),
+					filter.salaryTo());
 			return predicate;
 		};
 	}
@@ -68,7 +83,9 @@ public final class JobSpecification {
 					filter.active(),
 					filter.hot(),
 					filter.fromDate(),
-					filter.toDate());
+					filter.toDate(),
+					filter.salaryFrom(),
+					filter.salaryTo());
 		};
 	}
 
@@ -87,7 +104,9 @@ public final class JobSpecification {
 			Boolean active,
 			Boolean hot,
 			LocalDate fromDate,
-			LocalDate toDate) {
+			LocalDate toDate,
+			Integer salaryFrom,
+			Integer salaryTo) {
 
 		String normalizedKeyword = AccentHelper.normalizeForSearch(keyword);
 		if (normalizedKeyword != null) {
@@ -142,6 +161,34 @@ public final class JobSpecification {
 			predicate = criteriaBuilder.and(predicate,
 					criteriaBuilder.lessThan(root.get("createdAt"), to));
 		}
+		predicate = criteriaBuilder.and(predicate,
+				salaryOverlaps(criteriaBuilder, root, salaryFrom, salaryTo));
 		return predicate;
+	}
+
+	/** Khoảng lương của tin giao với [salaryFrom, salaryTo]. Đầu bỏ trống là không giới hạn. */
+	public static Predicate salaryOverlaps(
+			CriteriaBuilder criteriaBuilder,
+			Root<Job> root,
+			Integer salaryFrom,
+			Integer salaryTo) {
+		if (salaryFrom == null && salaryTo == null) {
+			return criteriaBuilder.conjunction();
+		}
+		Predicate hasBound = criteriaBuilder.or(
+				criteriaBuilder.isNotNull(root.get("salaryMin")),
+				criteriaBuilder.isNotNull(root.get("salaryMax")));
+		Predicate overlap = criteriaBuilder.conjunction();
+		if (salaryFrom != null) {
+			overlap = criteriaBuilder.and(overlap, criteriaBuilder.or(
+					criteriaBuilder.isNull(root.get("salaryMax")),
+					criteriaBuilder.greaterThanOrEqualTo(root.get("salaryMax"), salaryFrom)));
+		}
+		if (salaryTo != null) {
+			overlap = criteriaBuilder.and(overlap, criteriaBuilder.or(
+					criteriaBuilder.isNull(root.get("salaryMin")),
+					criteriaBuilder.lessThanOrEqualTo(root.get("salaryMin"), salaryTo)));
+		}
+		return criteriaBuilder.and(hasBound, overlap);
 	}
 }

@@ -23,7 +23,7 @@ import com.recruitment.util.constant.CacheNames;
 public class HotJobQueryService {
 
 	private static final PublicJobFilterRequest HOT_ONLY = new PublicJobFilterRequest(
-			null, null, null, null, null, null, null, null, Boolean.TRUE);
+			null, null, null, null, null, null, null, null, Boolean.TRUE, null, null);
 
 	private final JobRepository jobRepository;
 	private final JobApplicationRepository jobApplicationRepository;
