@@ -3,7 +3,6 @@ package com.recruitment.util.helper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 

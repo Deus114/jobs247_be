@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import com.recruitment.entity.BusinessConfig;
-import com.recruitment.mail.EmailPublisher.EmailMessage;
 import com.recruitment.enums.EmailType;
 import com.recruitment.exception.BusinessRuleException;
+import com.recruitment.queue.EmailPublisher.EmailMessage;
 import com.recruitment.service.MessageService;
 
 @Component
@@ -59,81 +59,102 @@ public class EmailTemplateRenderer {
 			String siteName,
 			Map<String, String> variables) {
 		return switch (type) {
-			case OTP_REGISTER -> {
-				String code = required(variables, "code");
-				String minutes = required(variables, "minutes");
-				String prefix = "mail." + type.templateName();
-				yield Map.of(
-						"heading", escape(messageService.get(locale, prefix + ".heading")),
-						"intro", escape(messageService.get(locale, prefix + ".intro", siteName)),
-						"codeLabel", escape(messageService.get(locale, prefix + ".code-label")),
-						"code", escape(code),
-						"expiry", escape(messageService.get(locale, prefix + ".expiry", minutes)));
-			}
-			case APPLICATION_SUBMITTED -> {
-				String prefix = "mail." + type.templateName();
-				yield Map.of(
-						"heading", escape(messageService.get(locale, prefix + ".heading")),
-						"intro", escape(messageService.get(
-								locale,
-								prefix + ".intro",
-								required(variables, "applicantName"),
-								siteName)),
-						"jobLabel", escape(messageService.get(locale, prefix + ".job-label")),
-						"jobTitle", escape(required(variables, "jobTitle")),
-						"companyLabel", escape(messageService.get(locale, prefix + ".company-label")),
-						"companyName", escape(required(variables, "companyName")),
-						"outro", escape(messageService.get(locale, prefix + ".outro")));
-			}
-			case APPLICATION_RECEIVED -> {
-				String prefix = "mail." + type.templateName();
-				yield Map.of(
-						"heading", escape(messageService.get(locale, prefix + ".heading")),
-						"intro", escape(messageService.get(
-								locale,
-								prefix + ".intro",
-								required(variables, "applicantName"),
-								siteName)),
-						"applicantLabel", escape(messageService.get(locale, prefix + ".applicant-label")),
-						"applicantName", escape(required(variables, "applicantName")),
-						"jobLabel", escape(messageService.get(locale, prefix + ".job-label")),
-						"jobTitle", escape(required(variables, "jobTitle")),
-						"companyLabel", escape(messageService.get(locale, prefix + ".company-label")),
-						"companyName", escape(required(variables, "companyName")),
-						"outro", escape(messageService.get(locale, prefix + ".outro")));
-			}
+		case OTP_REGISTER -> {
+			String code = required(variables, "code");
+			String minutes = required(variables, "minutes");
+			String prefix = "mail." + type.templateName();
+			yield Map.of(
+					"heading", escape(messageService.get(locale, prefix + ".heading")),
+					"intro", escape(messageService.get(locale, prefix + ".intro", siteName)),
+					"codeLabel", escape(messageService.get(locale, prefix + ".code-label")),
+					"code", escape(code),
+					"expiry", escape(messageService.get(locale, prefix + ".expiry", minutes)));
+		}
+		case APPLICATION_SUBMITTED -> {
+			String prefix = "mail." + type.templateName();
+			yield Map.of(
+					"heading", escape(messageService.get(locale, prefix + ".heading")),
+					"intro", escape(messageService.get(
+							locale,
+							prefix + ".intro",
+							required(variables, "applicantName"),
+							siteName)),
+					"jobLabel", escape(messageService.get(locale, prefix + ".job-label")),
+					"jobTitle", escape(required(variables, "jobTitle")),
+					"companyLabel", escape(messageService.get(locale, prefix + ".company-label")),
+					"companyName", escape(required(variables, "companyName")),
+					"outro", escape(messageService.get(locale, prefix + ".outro")));
+		}
+		case APPLICATION_RECEIVED -> {
+			String prefix = "mail." + type.templateName();
+			yield Map.of(
+					"heading", escape(messageService.get(locale, prefix + ".heading")),
+					"intro", escape(messageService.get(
+							locale,
+							prefix + ".intro",
+							required(variables, "applicantName"),
+							siteName)),
+					"applicantLabel", escape(messageService.get(locale, prefix + ".applicant-label")),
+					"applicantName", escape(required(variables, "applicantName")),
+					"jobLabel", escape(messageService.get(locale, prefix + ".job-label")),
+					"jobTitle", escape(required(variables, "jobTitle")),
+					"companyLabel", escape(messageService.get(locale, prefix + ".company-label")),
+					"companyName", escape(required(variables, "companyName")),
+					"outro", escape(messageService.get(locale, prefix + ".outro")));
+		}
+		case USER_REGISTERED -> {
+			String prefix = "mail." + type.templateName();
+			yield Map.of(
+					"heading", escape(messageService.get(locale, prefix + ".heading")),
+					"intro", escape(messageService.get(locale, prefix + ".intro", siteName)),
+					"nameLabel", escape(messageService.get(locale, prefix + ".name-label")),
+					"accountName", escape(required(variables, "accountName")),
+					"emailLabel", escape(messageService.get(locale, prefix + ".email-label")),
+					"accountEmail", escape(required(variables, "accountEmail")),
+					"typeLabel", escape(messageService.get(locale, prefix + ".type-label")),
+					"accountType", escape(required(variables, "accountType")),
+					"outro", escape(messageService.get(locale, prefix + ".outro")));
+		}
 		};
 	}
 
 	private String plainText(EmailType type, Locale locale, String siteName, Map<String, String> variables) {
 		return switch (type) {
-			case OTP_REGISTER -> messageService.get(
-					locale,
-					"mail." + type.templateName() + ".text",
-					siteName,
-					required(variables, "code"),
-					required(variables, "minutes"));
-			case APPLICATION_SUBMITTED -> messageService.get(
-					locale,
-					"mail." + type.templateName() + ".text",
-					required(variables, "applicantName"),
-					required(variables, "jobTitle"),
-					required(variables, "companyName"),
-					siteName);
-			case APPLICATION_RECEIVED -> messageService.get(
-					locale,
-					"mail." + type.templateName() + ".text",
-					required(variables, "applicantName"),
-					required(variables, "jobTitle"),
-					required(variables, "companyName"),
-					siteName);
+		case OTP_REGISTER -> messageService.get(
+				locale,
+				"mail." + type.templateName() + ".text",
+				siteName,
+				required(variables, "code"),
+				required(variables, "minutes"));
+		case APPLICATION_SUBMITTED -> messageService.get(
+				locale,
+				"mail." + type.templateName() + ".text",
+				required(variables, "applicantName"),
+				required(variables, "jobTitle"),
+				required(variables, "companyName"),
+				siteName);
+		case APPLICATION_RECEIVED -> messageService.get(
+				locale,
+				"mail." + type.templateName() + ".text",
+				required(variables, "applicantName"),
+				required(variables, "jobTitle"),
+				required(variables, "companyName"),
+				siteName);
+		case USER_REGISTERED -> messageService.get(
+				locale,
+				"mail." + type.templateName() + ".text",
+				required(variables, "accountType"),
+				required(variables, "accountName"),
+				required(variables, "accountEmail"),
+				siteName);
 		};
 	}
 
 	private String brand(BusinessConfig config, String siteName, boolean embedLogo) {
 		StringBuilder html = new StringBuilder();
 		if (embedLogo) {
-			html.append("<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"margin:0 0 10px;\">")
+			html.append(
+					"<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"margin:0 0 10px;\">")
 					.append("<tr><td align=\"center\">")
 					.append("<img src=\"cid:logo\" alt=\"")
 					.append(escape(siteName))

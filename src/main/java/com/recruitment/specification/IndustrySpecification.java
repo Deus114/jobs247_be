@@ -1,13 +1,13 @@
 package com.recruitment.specification;
 
+import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import com.recruitment.dto.request.admin.industry.IndustryFilterRequest;
 import com.recruitment.entity.Industry;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SearchHelper;
-
-import jakarta.persistence.criteria.Predicate;
 
 public final class IndustrySpecification {
 

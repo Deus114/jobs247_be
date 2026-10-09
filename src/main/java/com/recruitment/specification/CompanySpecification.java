@@ -1,5 +1,9 @@
 package com.recruitment.specification;
 
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import com.recruitment.dto.request.user.company.EmployerCompanyFilterRequest;
@@ -7,10 +11,6 @@ import com.recruitment.entity.Company;
 import com.recruitment.entity.CompanyMember;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SearchHelper;
-
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Subquery;
 
 public final class CompanySpecification {
 

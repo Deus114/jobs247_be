@@ -25,6 +25,9 @@ uploads
 ### Environment Variables ###
 .env
 .env.local
+secrets/
+firebase-service-account.json
+*firebase-adminsdk*.json
 
 ### Cursor rules (local) ###
 .cursor/rules/

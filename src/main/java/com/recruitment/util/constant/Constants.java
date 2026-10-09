@@ -55,6 +55,7 @@ public final class Constants {
 	// --- Admin Job API ---
 
 	public static final String ADMIN_JOBS_BASE_PATH = "/api/v1/admin/jobs";
+	public static final String ADMIN_DASHBOARD_PATH = "/api/v1/admin/dashboard";
 
 	// --- User Auth API ---
 
@@ -78,6 +79,7 @@ public final class Constants {
 	public static final String JOB_SEEKER_API_BASE_PATH = "/api/v1/job-seeker";
 	public static final String EMPLOYER_COMPANIES_BASE_PATH = EMPLOYER_API_BASE_PATH + "/companies";
 	public static final String EMPLOYER_JOBS_BASE_PATH = EMPLOYER_API_BASE_PATH + "/jobs";
+	public static final String EMPLOYER_DASHBOARD_PATH = EMPLOYER_API_BASE_PATH + "/dashboard";
 	public static final String EMPLOYER_APPLICATIONS_BASE_PATH = EMPLOYER_API_BASE_PATH + "/applications";
 	public static final String EMPLOYER_JOIN_REQUESTS_BASE_PATH = EMPLOYER_API_BASE_PATH + "/join-requests";
 	public static final String JOB_SEEKER_JOB_APPLICATIONS_BASE_PATH = JOB_SEEKER_API_BASE_PATH
@@ -85,6 +87,12 @@ public final class Constants {
 	public static final String JOB_SEEKER_APPLICATIONS_BASE_PATH = JOB_SEEKER_API_BASE_PATH + "/applications";
 	public static final String JOB_SEEKER_SAVED_JOBS_BASE_PATH = JOB_SEEKER_API_BASE_PATH + "/saved-jobs";
 	public static final String ADMIN_APPLICATIONS_BASE_PATH = "/api/v1/admin/applications";
+
+	public static final String USER_NOTIFICATIONS_BASE_PATH = "/api/v1/notifications";
+	public static final String USER_DEVICE_TOKENS_BASE_PATH = "/api/v1/device-tokens";
+	public static final String ADMIN_NOTIFICATIONS_BASE_PATH = "/api/v1/admin/notifications";
+	public static final String ADMIN_DEVICE_TOKENS_BASE_PATH = "/api/v1/admin/device-tokens";
+
 	public static final int EMPLOYER_MAX_COMPANIES = 3;
 
 	public static final String ADMIN_API_PATTERN = "/api/v1/admin/**";

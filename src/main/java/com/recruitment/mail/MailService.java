@@ -9,7 +9,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Optional;
-
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
@@ -24,7 +23,7 @@ import org.springframework.util.StringUtils;
 
 import com.recruitment.entity.BusinessConfig;
 import com.recruitment.exception.BusinessRuleException;
-import com.recruitment.mail.EmailPublisher.EmailMessage;
+import com.recruitment.queue.EmailPublisher.EmailMessage;
 import com.recruitment.repository.BusinessConfigRepository;
 import com.recruitment.service.S3StorageService;
 import com.recruitment.service.S3StorageService.StoredObject;

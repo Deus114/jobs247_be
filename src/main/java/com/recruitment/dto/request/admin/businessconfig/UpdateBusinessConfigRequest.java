@@ -1,12 +1,13 @@
 package com.recruitment.dto.request.admin.businessconfig;
 
-import org.springframework.web.multipart.MultipartFile;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public record UpdateBusinessConfigRequest(
 		@Size(max = 255, message = "{validation.site-name.max-length}")
@@ -18,6 +19,10 @@ public record UpdateBusinessConfigRequest(
 		@Email(message = "{validation.email.invalid}")
 		@Size(max = 255, message = "{validation.email.max-length}")
 		String email,
+
+		@Size(max = 2000, message = "{validation.notification-emails.max-length}")
+		@Schema(description = "Danh sách email nhận thông báo khi có tài khoản đăng ký mới, cách nhau bằng dấu phẩy. Ví dụ abc@gmail.com, def@gmail.com")
+		String notificationEmails,
 
 		@Size(max = 50, message = "{validation.phone.max-length}")
 		String phone,

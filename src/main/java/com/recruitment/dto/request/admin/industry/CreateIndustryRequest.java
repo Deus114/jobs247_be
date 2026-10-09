@@ -1,11 +1,12 @@
 package com.recruitment.dto.request.admin.industry;
 
-import org.springframework.web.multipart.MultipartFile;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public record CreateIndustryRequest(
 		@NotNull(message = "{validation.industry.group-id.required}")

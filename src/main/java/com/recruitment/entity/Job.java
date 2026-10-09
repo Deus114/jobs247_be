@@ -4,11 +4,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.hibernate.annotations.BatchSize;
-
-import com.recruitment.enums.JobStatusEnum;
-
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -20,6 +15,10 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
+
+import org.hibernate.annotations.BatchSize;
+
+import com.recruitment.enums.JobStatusEnum;
 
 @Entity
 @Table(name = "jobs")

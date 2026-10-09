@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -44,8 +46,8 @@ import com.recruitment.exception.AccountInactiveException;
 import com.recruitment.exception.BusinessRuleException;
 import com.recruitment.exception.DuplicateResourceException;
 import com.recruitment.exception.InvalidTokenException;
-import com.recruitment.mail.EmailPublisher;
 import com.recruitment.mapper.CompanyMapper;
+import com.recruitment.queue.EmailPublisher;
 import com.recruitment.repository.CompanyMemberRepository;
 import com.recruitment.repository.EmailOtpRepository;
 import com.recruitment.repository.UserRepository;
@@ -53,9 +55,6 @@ import com.recruitment.security.JwtTokenProvider;
 import com.recruitment.util.constant.Constants;
 import com.recruitment.util.helper.FileHelper;
 import com.recruitment.util.helper.RefreshCookieHelper;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class UserAuthService {
@@ -75,6 +74,7 @@ public class UserAuthService {
 	private final FileStorageService fileStorageService;
 	private final RefreshCookieHelper refreshCookieHelper;
 	private final OtpRateLimitService otpRateLimitService;
+	private final RegistrationEmailService registrationEmailService;
 	private final Duration otpTtl;
 	private final Duration otpResendCooldown;
 
@@ -91,6 +91,7 @@ public class UserAuthService {
 			FileStorageService fileStorageService,
 			RefreshCookieHelper refreshCookieHelper,
 			OtpRateLimitService otpRateLimitService,
+			RegistrationEmailService registrationEmailService,
 			@Value("${app.auth.otp-expiration}")
 			long otpExpirationMillis,
 			@Value("${app.auth.otp-resend-cooldown}")
@@ -107,6 +108,7 @@ public class UserAuthService {
 		this.fileStorageService = fileStorageService;
 		this.refreshCookieHelper = refreshCookieHelper;
 		this.otpRateLimitService = otpRateLimitService;
+		this.registrationEmailService = registrationEmailService;
 		this.otpTtl = Duration.ofMillis(otpExpirationMillis);
 		this.otpResendCooldown = Duration.ofMillis(otpResendCooldownMillis);
 	}
@@ -203,6 +205,7 @@ public class UserAuthService {
 		user.setUpdatedBy(email);
 
 		User saved = userRepository.save(user);
+		registrationEmailService.publishNewAccount(saved);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(
 				HttpStatus.CREATED.value(),
@@ -333,6 +336,9 @@ public class UserAuthService {
 		if (StringUtils.hasText(request.phone())) {
 			user.setPhone(request.phone().trim());
 		}
+		if (request.pushEnabled() != null) {
+			user.setPushEnabled(request.pushEnabled());
+		}
 		applyPasswordChange(user, request.currentPassword(), request.newPassword());
 		user.setUpdatedBy(user.getEmail());
 
@@ -400,6 +406,7 @@ public class UserAuthService {
 				user.getAvatar(),
 				user.getPhone(),
 				user.isActive(),
+				user.isPushEnabled(),
 				companies,
 				user.getCreatedAt(),
 				user.getUpdatedAt());

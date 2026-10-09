@@ -1,7 +1,8 @@
 package com.recruitment.dto.request.admin.job;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public record UpdateAdminJobRequest(
 		@Schema(description = "Ẩn/hiện tin")

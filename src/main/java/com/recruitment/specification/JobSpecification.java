@@ -3,7 +3,6 @@ package com.recruitment.specification;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 

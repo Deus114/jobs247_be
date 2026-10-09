@@ -1,5 +1,6 @@
 package com.recruitment.repository;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,6 +22,51 @@ public interface JobApplicationRepository
 		extends JpaRepository<JobApplication, Long>, JpaSpecificationExecutor<JobApplication> {
 
 	long countByJobId(Long jobId);
+
+	@Query("""
+			SELECT COUNT(application.id) FROM JobApplication application
+			WHERE application.job.company.id IN :companyIds
+			""")
+	long countByCompanyIds(@Param("companyIds") Collection<Long> companyIds);
+
+	@Query("""
+			SELECT COUNT(application.id) FROM JobApplication application
+			WHERE application.job.company.id IN :companyIds
+			  AND application.createdAt >= :start
+			""")
+	long countByCompanyIdsSince(
+			@Param("companyIds") Collection<Long> companyIds,
+			@Param("start") Instant start);
+
+	@Query("""
+			SELECT COUNT(application.id) FROM JobApplication application
+			WHERE application.job.company.id IN :companyIds
+			  AND application.status = :status
+			""")
+	long countByCompanyIdsAndStatus(
+			@Param("companyIds") Collection<Long> companyIds,
+			@Param("status") String status);
+
+	@Query("""
+			SELECT job.id, job.title, COUNT(application.id)
+			FROM JobApplication application
+			JOIN application.job job
+			WHERE job.company.id IN :companyIds
+			GROUP BY job.id, job.title
+			ORDER BY COUNT(application.id) DESC
+			""")
+	List<Object[]> countGroupedByCompanyIds(@Param("companyIds") Collection<Long> companyIds);
+
+	@Query("""
+			SELECT application.createdAt FROM JobApplication application
+			WHERE application.job.company.id IN :companyIds
+			  AND application.createdAt >= :start
+			""")
+	List<Instant> findCreatedAtByCompanyIdsSince(
+			@Param("companyIds") Collection<Long> companyIds,
+			@Param("start") Instant start);
+
+	List<JobApplication> findTop8ByJob_Company_IdInOrderByCreatedAtDesc(Collection<Long> companyIds);
 
 	@Query("""
 			SELECT ja.job.id, COUNT(ja)

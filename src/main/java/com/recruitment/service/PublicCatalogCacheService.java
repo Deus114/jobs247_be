@@ -81,7 +81,7 @@ public class PublicCatalogCacheService {
 				.map(educationLevelMapper::toPublicResponse));
 	}
 
-	@Cacheable(cacheNames = CacheNames.BUSINESS_CONFIG, key = "'singleton'")
+	@Cacheable(cacheNames = CacheNames.BUSINESS_CONFIG, key = "'public'")
 	@Transactional(readOnly = true)
 	public BusinessConfigPublicResponse businessConfig() {
 		BusinessConfig config = businessConfigRepository.findById(Constants.BUSINESS_CONFIG_ID)

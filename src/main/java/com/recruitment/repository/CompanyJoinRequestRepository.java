@@ -34,7 +34,7 @@ public interface CompanyJoinRequestRepository extends JpaRepository<CompanyJoinR
 			@Param("companyIds")
 			Collection<Long> companyIds);
 
-	
+
 	Optional<CompanyJoinRequest> findByIdAndCompanyId(Long id, Long companyId);
 
 	Page<CompanyJoinRequest> findByCompanyId(Long companyId, Pageable pageable);
@@ -46,11 +46,11 @@ public interface CompanyJoinRequestRepository extends JpaRepository<CompanyJoinR
 	Page<CompanyJoinRequest> findByCompanyIdInAndStatus(
 			Collection<Long> companyIds,
 			String status,
-			
+
 			Pageable pageabl
 			);
 
-			
+
 	Page<CompanyJoinRequest> findByUserId(Long userId, Pageable pageable);
 
 	Page<CompanyJoinRequest> findByUserIdAndStatus(Long userId, String status, Pageable pageable);

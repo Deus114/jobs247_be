@@ -24,6 +24,7 @@ import com.recruitment.enums.JobStatusEnum;
 import com.recruitment.exception.BusinessRuleException;
 import com.recruitment.exception.ResourceNotFoundException;
 import com.recruitment.mapper.JobMapper;
+import com.recruitment.notification.UserNotificationService;
 import com.recruitment.repository.JobApplicationRepository;
 import com.recruitment.repository.JobRepository;
 import com.recruitment.specification.JobSpecification;
@@ -39,6 +40,7 @@ public class AdminJobService {
 	private final JobApplicationRepository jobApplicationRepository;
 	private final JobMapper jobMapper;
 	private final SoftDeletedPageQuery softDeletedPageQuery;
+	private final UserNotificationService userNotificationService;
 	private final MessageService messageService;
 
 	public AdminJobService(
@@ -46,11 +48,13 @@ public class AdminJobService {
 			JobApplicationRepository jobApplicationRepository,
 			JobMapper jobMapper,
 			SoftDeletedPageQuery softDeletedPageQuery,
+			UserNotificationService userNotificationService,
 			MessageService messageService) {
 		this.jobRepository = jobRepository;
 		this.jobApplicationRepository = jobApplicationRepository;
 		this.jobMapper = jobMapper;
 		this.softDeletedPageQuery = softDeletedPageQuery;
+		this.userNotificationService = userNotificationService;
 		this.messageService = messageService;
 	}
 
@@ -131,6 +135,8 @@ public class AdminJobService {
 		}
 
 		Job job = findActiveById(id);
+		String previousStatus = job.getStatus();
+		String newStatus = null;
 		if (request.active() != null) {
 			job.setActive(request.active());
 		}
@@ -142,6 +148,7 @@ public class AdminJobService {
 					request.status(),
 					request.rejectionReason(),
 					"error.job.status.invalid");
+			newStatus = fields.status();
 			job.setStatus(fields.status());
 			job.setRejectionReason(fields.rejectionReason());
 			job.setRejectedAt(fields.rejectedAt());
@@ -150,6 +157,9 @@ public class AdminJobService {
 		job.setUpdatedBy(currentUsername);
 
 		Job saved = jobRepository.save(job);
+		if (newStatus != null && !newStatus.equals(previousStatus)) {
+			userNotificationService.notifyJobReviewed(saved, newStatus, currentUsername);
+		}
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("admin-job.update.success"),
 				jobMapper.toAdminResponse(saved, jobApplicationRepository.countByJobId(saved.getId()))));

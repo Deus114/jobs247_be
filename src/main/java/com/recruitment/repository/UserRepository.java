@@ -1,5 +1,7 @@
 package com.recruitment.repository;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +15,12 @@ import com.recruitment.entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+
+	long countByTypeAndActiveTrue(String type);
+
+	long countByCreatedAtLessThan(Instant end);
+
+	List<User> findTop8ByOrderByCreatedAtDesc();
 
 	boolean existsByEmail(String email);
 

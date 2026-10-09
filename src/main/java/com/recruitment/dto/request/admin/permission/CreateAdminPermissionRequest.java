@@ -1,10 +1,10 @@
 package com.recruitment.dto.request.admin.permission;
 
-import com.recruitment.enums.PermissionTypeEnum;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import com.recruitment.enums.PermissionTypeEnum;
 
 public record CreateAdminPermissionRequest(
 		@NotBlank(message = "{validation.permission-name.required}")

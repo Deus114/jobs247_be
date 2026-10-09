@@ -2,14 +2,13 @@ package com.recruitment.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.hibernate.annotations.BatchSize;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "industry_groups")

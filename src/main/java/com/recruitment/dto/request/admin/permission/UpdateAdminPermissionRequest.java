@@ -1,8 +1,8 @@
 package com.recruitment.dto.request.admin.permission;
 
-import com.recruitment.enums.PermissionTypeEnum;
-
 import jakarta.validation.constraints.Size;
+
+import com.recruitment.enums.PermissionTypeEnum;
 
 public record UpdateAdminPermissionRequest(
 		@Size(max = 150, message = "{validation.permission-name.max-length}")

@@ -37,7 +37,10 @@ public class BusinessConfigMapper {
 				config.getYoutubeUrl(),
 				config.getMetaTitle(),
 				config.getMetaDescription(),
-				config.getMetaKeywords());
+				config.getMetaKeywords(),
+				0L,
+				0L,
+				0L);
 	}
 
 	public BusinessConfigResponse toResponse(BusinessConfig config) {
@@ -46,6 +49,7 @@ public class BusinessConfigMapper {
 				config.getSiteName(),
 				config.getTagline(),
 				config.getEmail(),
+				config.getNotificationEmails(),
 				config.getPhone(),
 				config.getAddress(),
 				config.getTaxCode(),

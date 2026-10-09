@@ -27,5 +27,42 @@ public record BusinessConfigPublicResponse(
 		String youtubeUrl,
 		String metaTitle,
 		String metaDescription,
-		String metaKeywords) {
+		String metaKeywords,
+		long jobCount,
+		long companyCount,
+		long jobSeekerCount) {
+
+	public BusinessConfigPublicResponse withCounts(long jobCount, long companyCount, long jobSeekerCount) {
+		return new BusinessConfigPublicResponse(
+				id,
+				siteName,
+				tagline,
+				email,
+				phone,
+				address,
+				taxCode,
+				latitude,
+				longitude,
+				logo,
+				homeBanner,
+				userLoginBackground,
+				userRegisterBanner,
+				footerAbout,
+				footerCopyright,
+				footerAddress,
+				footerPhone,
+				footerEmail,
+				privacyPolicy,
+				termsOfService,
+				facebookUrl,
+				linkedinUrl,
+				twitterUrl,
+				youtubeUrl,
+				metaTitle,
+				metaDescription,
+				metaKeywords,
+				jobCount,
+				companyCount,
+				jobSeekerCount);
+	}
 }

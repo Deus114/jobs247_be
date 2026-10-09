@@ -14,6 +14,7 @@ public record UserSessionResponse(
 		String avatar,
 		String phone,
 		boolean active,
+		boolean pushEnabled,
 		List<UserCompanyMembershipResponse> companies,
 		Instant createdAt,
 		Instant updatedAt) {

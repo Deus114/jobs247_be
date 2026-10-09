@@ -32,6 +32,12 @@ public class RabbitMqConfig {
 	public static final String EMAIL_DLX = "email.dlx";
 	public static final String EMAIL_DLQ = "email.send.dlq";
 
+	public static final String FCM_EXCHANGE = "fcm.exchange";
+	public static final String FCM_QUEUE = "fcm.push";
+	public static final String FCM_ROUTING_KEY = "fcm.push";
+	public static final String FCM_DLX = "fcm.dlx";
+	public static final String FCM_DLQ = "fcm.push.dlq";
+
 	@Value("${spring.rabbitmq.host:localhost}")
 	private String host;
 
@@ -115,6 +121,47 @@ public class RabbitMqConfig {
 	@Bean
 	Queue emailDeadLetterQueue() {
 		return QueueBuilder.durable(EMAIL_DLQ).build();
+	}
+
+	@Bean
+	DirectExchange fcmExchange() {
+		return new DirectExchange(FCM_EXCHANGE, true, false);
+	}
+
+	@Bean
+	Queue fcmQueue() {
+		return QueueBuilder.durable(FCM_QUEUE)
+				.deadLetterExchange(FCM_DLX)
+				.deadLetterRoutingKey(FCM_DLQ)
+				.build();
+	}
+
+	@Bean
+	Binding fcmBinding(
+			@Qualifier("fcmQueue")
+			Queue fcmQueue,
+			@Qualifier("fcmExchange")
+			DirectExchange fcmExchange) {
+		return BindingBuilder.bind(fcmQueue).to(fcmExchange).with(FCM_ROUTING_KEY);
+	}
+
+	@Bean
+	DirectExchange fcmDeadLetterExchange() {
+		return new DirectExchange(FCM_DLX, true, false);
+	}
+
+	@Bean
+	Queue fcmDeadLetterQueue() {
+		return QueueBuilder.durable(FCM_DLQ).build();
+	}
+
+	@Bean
+	Binding fcmDeadLetterBinding(
+			@Qualifier("fcmDeadLetterQueue")
+			Queue fcmDeadLetterQueue,
+			@Qualifier("fcmDeadLetterExchange")
+			DirectExchange fcmDeadLetterExchange) {
+		return BindingBuilder.bind(fcmDeadLetterQueue).to(fcmDeadLetterExchange).with(FCM_DLQ);
 	}
 
 	@Bean

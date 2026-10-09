@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Collection;
+import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
@@ -14,8 +15,6 @@ import com.recruitment.dto.request.user.application.JobSeekerApplicationFilterRe
 import com.recruitment.entity.JobApplication;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SearchHelper;
-
-import jakarta.persistence.criteria.Predicate;
 
 public final class JobApplicationSpecification {
 

@@ -1,9 +1,10 @@
 package com.recruitment.dto.request.admin.industry;
 
+import jakarta.validation.constraints.Size;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Size;
 
 public record UpdateIndustryRequest(
 		Long industryGroupId,

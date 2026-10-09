@@ -1,7 +1,6 @@
 package com.recruitment.entity;
 
 import java.time.Instant;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;

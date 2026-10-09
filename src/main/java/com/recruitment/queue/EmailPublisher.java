@@ -1,4 +1,4 @@
-package com.recruitment.mail;
+package com.recruitment.queue;
 
 import java.io.Serializable;
 import java.util.Map;

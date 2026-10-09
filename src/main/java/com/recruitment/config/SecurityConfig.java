@@ -2,6 +2,7 @@ package com.recruitment.config;
 
 import java.util.Arrays;
 import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +33,6 @@ import com.recruitment.security.PermissionAuthorizationManager;
 import com.recruitment.service.MessageService;
 import com.recruitment.util.constant.Constants;
 
-import jakarta.servlet.http.HttpServletRequest;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration

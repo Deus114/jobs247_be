@@ -1,5 +1,7 @@
 package com.recruitment.repository;
 
+import java.time.Instant;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -11,6 +13,14 @@ import com.recruitment.entity.Company;
 
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpecificationExecutor<Company> {
+
+	long countByStatus(String status);
+
+	long countByStatusAndActiveTrue(String status);
+
+	long countByCreatedAtLessThan(Instant end);
+
+	long countByStatusAndCreatedAtLessThan(String status, Instant end);
 
 	@Query(value = "SELECT COUNT(*) FROM companies WHERE tax_code = :taxCode", nativeQuery = true)
 	long countByTaxCodeIncludingDeleted(

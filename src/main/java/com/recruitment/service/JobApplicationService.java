@@ -40,8 +40,9 @@ import com.recruitment.exception.AccountInactiveException;
 import com.recruitment.exception.BusinessRuleException;
 import com.recruitment.exception.InvalidTokenException;
 import com.recruitment.exception.ResourceNotFoundException;
-import com.recruitment.mail.EmailPublisher;
 import com.recruitment.mapper.JobApplicationMapper;
+import com.recruitment.notification.UserNotificationService;
+import com.recruitment.queue.EmailPublisher;
 import com.recruitment.repository.CompanyMemberRepository;
 import com.recruitment.repository.JobApplicationRepository;
 import com.recruitment.repository.JobRepository;
@@ -58,6 +59,7 @@ public class JobApplicationService {
 	private final CompanyMemberRepository companyMemberRepository;
 	private final FileStorageService fileStorageService;
 	private final JobApplicationMapper jobApplicationMapper;
+	private final UserNotificationService userNotificationService;
 	private final EmailPublisher emailPublisher;
 	private final MessageService messageService;
 
@@ -68,6 +70,7 @@ public class JobApplicationService {
 			CompanyMemberRepository companyMemberRepository,
 			FileStorageService fileStorageService,
 			JobApplicationMapper jobApplicationMapper,
+			UserNotificationService userNotificationService,
 			EmailPublisher emailPublisher,
 			MessageService messageService) {
 		this.jobApplicationRepository = jobApplicationRepository;
@@ -76,6 +79,7 @@ public class JobApplicationService {
 		this.companyMemberRepository = companyMemberRepository;
 		this.fileStorageService = fileStorageService;
 		this.jobApplicationMapper = jobApplicationMapper;
+		this.userNotificationService = userNotificationService;
 		this.emailPublisher = emailPublisher;
 		this.messageService = messageService;
 	}
@@ -107,6 +111,8 @@ public class JobApplicationService {
 		JobApplication saved = jobApplicationRepository.save(application);
 
 		publishApplicationEmails(saved);
+		userNotificationService.notifyApplicationSubmitted(saved, seeker.getEmail());
+		userNotificationService.notifyApplicationReceived(saved, seeker.getEmail());
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(
 				HttpStatus.CREATED.value(),
@@ -179,6 +185,7 @@ public class JobApplicationService {
 			application.setViewedByUser(employer);
 			application.setUpdatedBy(employer.getEmail());
 			application = jobApplicationRepository.save(application);
+			userNotificationService.notifyApplicationViewed(application, employer.getEmail());
 		}
 
 		return ResponseEntity.ok(ApiResponse.success(

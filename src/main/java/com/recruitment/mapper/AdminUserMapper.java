@@ -22,6 +22,7 @@ public class AdminUserMapper {
 				adminUser.getAvatar(),
 				adminRoleMapper.toResponse(adminUser.getRole()),
 				adminUser.isActive(),
+				adminUser.isPushEnabled(),
 				adminUser.getCreatedAt(),
 				adminUser.getUpdatedAt());
 	}

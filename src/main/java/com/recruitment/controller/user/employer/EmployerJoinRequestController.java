@@ -1,5 +1,7 @@
 package com.recruitment.controller.user.employer;
 
+import jakarta.validation.Valid;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -26,7 +28,6 @@ import com.recruitment.util.constant.Constants;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(Constants.EMPLOYER_JOIN_REQUESTS_BASE_PATH)

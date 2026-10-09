@@ -1,9 +1,6 @@
 package com.recruitment.entity;
 
 import java.time.Instant;
-
-import com.recruitment.enums.ApplicationStatusEnum;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,6 +8,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+
+import com.recruitment.enums.ApplicationStatusEnum;
 
 @Entity
 @Table(name = "job_applications", uniqueConstraints = {

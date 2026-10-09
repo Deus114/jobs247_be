@@ -11,6 +11,7 @@ public record AdminUserResponse(
 		String avatar,
 		AdminRoleResponse role,
 		boolean active,
+		boolean pushEnabled,
 		Instant createdAt,
 		Instant updatedAt) {
 }

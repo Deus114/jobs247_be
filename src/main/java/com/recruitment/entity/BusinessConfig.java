@@ -1,7 +1,6 @@
 package com.recruitment.entity;
 
 import java.time.Instant;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -27,6 +26,9 @@ public class BusinessConfig {
 
 	@Column(length = 255)
 	private String email;
+
+	@Column(name = "notification_emails", length = 2000)
+	private String notificationEmails;
 
 	@Column(length = 50)
 	private String phone;
@@ -185,6 +187,14 @@ public class BusinessConfig {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getNotificationEmails() {
+		return notificationEmails;
+	}
+
+	public void setNotificationEmails(String notificationEmails) {
+		this.notificationEmails = notificationEmails;
 	}
 
 	public String getPhone() {

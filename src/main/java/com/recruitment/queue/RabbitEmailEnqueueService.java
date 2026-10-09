@@ -1,4 +1,4 @@
-package com.recruitment.mail;
+package com.recruitment.queue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.recruitment.config.RabbitMqConfig;
-import com.recruitment.mail.EmailPublisher.EmailMessage;
+import com.recruitment.mail.MailService;
+import com.recruitment.queue.EmailPublisher.EmailMessage;
 
 @Service
 @ConditionalOnProperty(name = "app.mail.queue-enabled", havingValue = "true")

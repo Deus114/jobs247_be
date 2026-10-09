@@ -35,6 +35,7 @@ import com.recruitment.exception.BusinessRuleException;
 import com.recruitment.exception.InvalidTokenException;
 import com.recruitment.exception.ResourceNotFoundException;
 import com.recruitment.mapper.JobMapper;
+import com.recruitment.notification.AdminNotificationService;
 import com.recruitment.repository.CompanyMemberRepository;
 import com.recruitment.repository.CompanyRepository;
 import com.recruitment.repository.JobApplicationRepository;
@@ -60,6 +61,7 @@ public class EmployerJobService {
 	private final JobCatalogHelper jobCatalogHelper;
 	private final JobMapper jobMapper;
 	private final SoftDeletedPageQuery softDeletedPageQuery;
+	private final AdminNotificationService adminNotificationService;
 	private final MessageService messageService;
 
 	public EmployerJobService(
@@ -71,6 +73,7 @@ public class EmployerJobService {
 			JobCatalogHelper jobCatalogHelper,
 			JobMapper jobMapper,
 			SoftDeletedPageQuery softDeletedPageQuery,
+			AdminNotificationService adminNotificationService,
 			MessageService messageService) {
 		this.jobRepository = jobRepository;
 		this.companyRepository = companyRepository;
@@ -80,6 +83,7 @@ public class EmployerJobService {
 		this.jobCatalogHelper = jobCatalogHelper;
 		this.jobMapper = jobMapper;
 		this.softDeletedPageQuery = softDeletedPageQuery;
+		this.adminNotificationService = adminNotificationService;
 		this.messageService = messageService;
 	}
 
@@ -197,6 +201,7 @@ public class EmployerJobService {
 		job.setUpdatedBy(employer.getEmail());
 
 		Job saved = jobRepository.save(job);
+		adminNotificationService.notifyJobPending(saved, employer.getEmail());
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(
 				HttpStatus.CREATED.value(),
 				messageService.get("job.create.success"),
@@ -212,6 +217,7 @@ public class EmployerJobService {
 
 		User employer = requireEmployer(jwt);
 		Job job = requireAccessibleJob(id, employer.getId());
+		String previousStatus = job.getStatus();
 		boolean contentChanged = false;
 
 		if (StringUtils.hasText(request.title())) {
@@ -309,6 +315,10 @@ public class EmployerJobService {
 
 		job.setUpdatedBy(employer.getEmail());
 		Job saved = jobRepository.save(job);
+		if (JobStatusEnum.PENDING.name().equals(saved.getStatus())
+				&& !JobStatusEnum.PENDING.name().equals(previousStatus)) {
+			adminNotificationService.notifyJobPending(saved, employer.getEmail());
+		}
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("job.update.success"),
 				jobMapper.toEmployerResponse(saved, jobApplicationRepository.countByJobId(saved.getId()))));

@@ -2,15 +2,19 @@
 
 # Deploy
 
-http://3.1.196.187/swagger-ui/index.html
+https://jobs247-demo.duckdns.org//swagger-ui/index.html
 
 - Java 25
 - Spring Boot 4
 - Spring Security + JWT (OAuth2 Resource Server)
 - Spring Data JPA
+- Spring Mail
+- Spring Cache
 - MySQL
 - RabbitMQ
 - Redis
+- Amazon S3
+- Firebase Cloud Messaging
 - Maven
 - SpringDoc OpenAPI (Swagger)
 - Docker Compose
@@ -28,7 +32,7 @@ http://3.1.196.187/swagger-ui/index.html
 
 ### Chạy app bằng Maven
 
-Cần MySQL và, khi `MAIL_QUEUE_ENABLED=true`, RabbitMQ đang lắng nghe `localhost`.
+Cần MySQL, Redis và, khi `MAIL_QUEUE_ENABLED=true`, RabbitMQ đang lắng nghe `localhost`. Push chỉ gửi khi `FCM_ENABLED=true`.
 
 ```bash
 .\mvnw.cmd spring-boot:run
@@ -36,17 +40,13 @@ Cần MySQL và, khi `MAIL_QUEUE_ENABLED=true`, RabbitMQ đang lắng nghe `loca
 
 ### Docker local
 
-`docker-compose.yml`: MySQL (cổng host `3307`), RabbitMQ (`5672`, Management UI `15672`), backend (`8080`).
+`docker-compose.yml`: MySQL (cổng host `3307`), Redis (`6379`), RabbitMQ (`5672`, Management UI `15672`), backend (`8080`).
 
 ```bash
 docker compose up -d --build
 ```
 
 RabbitMQ Management: http://localhost:15672 (`guest` / `guest`). App: http://localhost:8080.
-
-### Docker prod
-
-`docker-compose.prod.yml`: MySQL, Redis, RabbitMQ (không UI), backend lấy image `${DOCKERHUB_USERNAME}/jobs247-backend:latest`. Trên EC2 cần file `.env` tại `/opt/jobs247` và biến `DOCKERHUB_USERNAME`.
 
 ```bash
 docker compose -f docker-compose.prod.yml pull

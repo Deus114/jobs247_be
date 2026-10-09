@@ -46,6 +46,9 @@ public class AdminRbacSeeder implements CommandLineRunner {
 	private static final String MODULE_COMPANY = "company";
 	private static final String MODULE_JOB = "job";
 	private static final String MODULE_APPLICATION = "application";
+	private static final String MODULE_NOTIFICATION = "notification";
+	private static final String MODULE_DEVICE_TOKEN = "device-token";
+	private static final String MODULE_DASHBOARD = "dashboard";
 	private static final PermissionTypeEnum SEEDED_TYPE = PermissionTypeEnum.ACTION;
 	private static final Set<String> MANAGED_MODULES = Set.of(
 			MODULE_ADMIN_USER,
@@ -59,7 +62,10 @@ public class AdminRbacSeeder implements CommandLineRunner {
 			MODULE_ACCOUNT,
 			MODULE_COMPANY,
 			MODULE_JOB,
-			MODULE_APPLICATION);
+			MODULE_APPLICATION,
+			MODULE_NOTIFICATION,
+			MODULE_DEVICE_TOKEN,
+			MODULE_DASHBOARD);
 
 	private final AdminRoleRepository adminRoleRepository;
 	private final AdminUserRepository adminUserRepository;
@@ -110,6 +116,9 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		seeds.addAll(companyPermissionSeeds());
 		seeds.addAll(jobPermissionSeeds());
 		seeds.addAll(applicationPermissionSeeds());
+		seeds.addAll(notificationPermissionSeeds());
+		seeds.addAll(deviceTokenPermissionSeeds());
+		seeds.addAll(dashboardPermissionSeeds());
 
 		Set<String> seedKeys = new HashSet<>();
 		int created = 0;
@@ -354,6 +363,34 @@ public class AdminRbacSeeder implements CommandLineRunner {
 						Constants.ADMIN_APPLICATIONS_BASE_PATH + "/{id}/restore"),
 				new PermissionSeed("PERMANENT_DELETE_APPLICATION", "Xóa vĩnh viễn đơn ứng tuyển", MODULE_APPLICATION,
 						"DELETE", Constants.ADMIN_APPLICATIONS_BASE_PATH + "/{id}/permanent"));
+	}
+
+	private List<PermissionSeed> notificationPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_NOTIFICATIONS", "Xem danh sách thông báo", MODULE_NOTIFICATION, "GET",
+						Constants.ADMIN_NOTIFICATIONS_BASE_PATH),
+				new PermissionSeed("VIEW_NOTIFICATION_UNREAD_COUNT", "Xem số thông báo chưa đọc", MODULE_NOTIFICATION,
+						"GET", Constants.ADMIN_NOTIFICATIONS_BASE_PATH + "/unread-count"),
+				new PermissionSeed("READ_NOTIFICATION", "Đánh dấu thông báo đã đọc", MODULE_NOTIFICATION, "PATCH",
+						Constants.ADMIN_NOTIFICATIONS_BASE_PATH + "/{id}/read"),
+				new PermissionSeed("READ_ALL_NOTIFICATIONS", "Đánh dấu tất cả thông báo đã đọc", MODULE_NOTIFICATION,
+						"PATCH", Constants.ADMIN_NOTIFICATIONS_BASE_PATH + "/read-all"),
+				new PermissionSeed("DELETE_NOTIFICATION", "Xóa thông báo", MODULE_NOTIFICATION, "DELETE",
+						Constants.ADMIN_NOTIFICATIONS_BASE_PATH + "/{id}"));
+	}
+
+	private List<PermissionSeed> dashboardPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("VIEW_DASHBOARD", "Xem thống kê tổng quan", MODULE_DASHBOARD, "GET",
+						Constants.ADMIN_DASHBOARD_PATH));
+	}
+
+	private List<PermissionSeed> deviceTokenPermissionSeeds() {
+		return List.of(
+				new PermissionSeed("REGISTER_DEVICE_TOKEN", "Đăng ký device token FCM", MODULE_DEVICE_TOKEN, "POST",
+						Constants.ADMIN_DEVICE_TOKENS_BASE_PATH),
+				new PermissionSeed("UNREGISTER_DEVICE_TOKEN", "Hủy device token FCM", MODULE_DEVICE_TOKEN, "DELETE",
+						Constants.ADMIN_DEVICE_TOKENS_BASE_PATH));
 	}
 
 	private boolean applySeed(AdminPermission permission, PermissionSeed seed) {

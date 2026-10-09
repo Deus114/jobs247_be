@@ -1,7 +1,6 @@
 package com.recruitment.dto.request.admin.role;
 
 import java.util.List;
-
 import jakarta.validation.constraints.Size;
 
 public record UpdateAdminRoleRequest(

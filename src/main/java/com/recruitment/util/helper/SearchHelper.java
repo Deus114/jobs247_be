@@ -1,7 +1,6 @@
 package com.recruitment.util.helper;
 
 import java.util.List;
-
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;

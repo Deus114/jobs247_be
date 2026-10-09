@@ -1,14 +1,14 @@
 package com.recruitment.specification;
 
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import com.recruitment.dto.request.admin.user.AdminUserFilterRequest;
 import com.recruitment.entity.AdminUser;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SearchHelper;
-
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
 
 public final class AdminUserSpecification {
 

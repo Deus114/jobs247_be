@@ -87,6 +87,10 @@ services:
       REDIS_PORT: 6379
       MAIL_QUEUE_ENABLED: "true"
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+
+    volumes:
+      - ./jobs247-firebase-adminsdk.json:/run/secrets/jobs247-firebase-adminsdk.json:ro
+
     ports:
       - "127.0.0.1:8080:8080"
 

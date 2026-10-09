@@ -7,7 +7,8 @@ import java.util.Optional;
 public enum EmailType {
 	OTP_REGISTER,
 	APPLICATION_SUBMITTED,
-	APPLICATION_RECEIVED;
+	APPLICATION_RECEIVED,
+	USER_REGISTERED;
 
 	public String templateName() {
 		return name().toLowerCase(Locale.ROOT).replace('_', '-');

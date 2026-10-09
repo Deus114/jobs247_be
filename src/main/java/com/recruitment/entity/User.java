@@ -29,6 +29,9 @@ public class User extends BaseEntity {
 	@Column(length = 20)
 	private String phone;
 
+	@Column(name = "push_enabled", nullable = false)
+	private boolean pushEnabled = true;
+
 	public String getName() {
 		return name;
 	}
@@ -83,5 +86,13 @@ public class User extends BaseEntity {
 
 	public void setPhone(String phone) {
 		this.phone = phone;
+	}
+
+	public boolean isPushEnabled() {
+		return pushEnabled;
+	}
+
+	public void setPushEnabled(boolean pushEnabled) {
+		this.pushEnabled = pushEnabled;
 	}
 }

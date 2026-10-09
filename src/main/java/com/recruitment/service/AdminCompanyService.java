@@ -20,6 +20,7 @@ import com.recruitment.enums.CompanyStatusEnum;
 import com.recruitment.exception.BusinessRuleException;
 import com.recruitment.exception.ResourceNotFoundException;
 import com.recruitment.mapper.AdminCompanyMapper;
+import com.recruitment.notification.UserNotificationService;
 import com.recruitment.repository.CompanyMemberRepository;
 import com.recruitment.repository.CompanyRepository;
 import com.recruitment.specification.AdminCompanySpecification;
@@ -34,6 +35,7 @@ public class AdminCompanyService {
 	private final CompanyMemberRepository companyMemberRepository;
 	private final AdminCompanyMapper adminCompanyMapper;
 	private final SoftDeletedPageQuery softDeletedPageQuery;
+	private final UserNotificationService userNotificationService;
 	private final MessageService messageService;
 
 	public AdminCompanyService(
@@ -41,11 +43,13 @@ public class AdminCompanyService {
 			CompanyMemberRepository companyMemberRepository,
 			AdminCompanyMapper adminCompanyMapper,
 			SoftDeletedPageQuery softDeletedPageQuery,
+			UserNotificationService userNotificationService,
 			MessageService messageService) {
 		this.companyRepository = companyRepository;
 		this.companyMemberRepository = companyMemberRepository;
 		this.adminCompanyMapper = adminCompanyMapper;
 		this.softDeletedPageQuery = softDeletedPageQuery;
+		this.userNotificationService = userNotificationService;
 		this.messageService = messageService;
 	}
 
@@ -100,6 +104,8 @@ public class AdminCompanyService {
 		}
 
 		Company company = findActiveById(id);
+		String previousStatus = company.getStatus();
+		String newStatus = null;
 		if (request.active() != null) {
 			company.setActive(request.active());
 		}
@@ -108,6 +114,7 @@ public class AdminCompanyService {
 					request.status(),
 					request.rejectionReason(),
 					"error.company.status.invalid");
+			newStatus = fields.status();
 			company.setStatus(fields.status());
 			company.setRejectionReason(fields.rejectionReason());
 			company.setRejectedAt(fields.rejectedAt());
@@ -116,6 +123,9 @@ public class AdminCompanyService {
 		company.setUpdatedBy(currentUsername);
 
 		Company saved = companyRepository.save(company);
+		if (newStatus != null && !newStatus.equals(previousStatus)) {
+			userNotificationService.notifyCompanyReviewed(saved, newStatus, currentUsername);
+		}
 		List<CompanyMember> members = companyMemberRepository.findByCompanyIdOrderByCreatedAtAsc(id);
 
 		return ResponseEntity.ok(ApiResponse.success(

@@ -1,5 +1,9 @@
 package com.recruitment.service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -16,20 +20,32 @@ import com.recruitment.dto.response.common.ApiResponse;
 import com.recruitment.dto.response.common.BusinessConfigPublicResponse;
 import com.recruitment.dto.response.common.UploadedFileResponse;
 import com.recruitment.entity.BusinessConfig;
+import com.recruitment.enums.CompanyStatusEnum;
+import com.recruitment.enums.JobStatusEnum;
 import com.recruitment.enums.UploadFolderType;
+import com.recruitment.enums.UserTypeEnum;
 import com.recruitment.exception.BusinessRuleException;
 import com.recruitment.exception.ResourceNotFoundException;
 import com.recruitment.mapper.BusinessConfigMapper;
 import com.recruitment.repository.BusinessConfigRepository;
+import com.recruitment.repository.CompanyRepository;
+import com.recruitment.repository.JobRepository;
+import com.recruitment.repository.UserRepository;
 import com.recruitment.util.constant.CacheNames;
 import com.recruitment.util.constant.Constants;
 import com.recruitment.util.helper.FileHelper;
 import com.recruitment.util.helper.NumberHelper;
 
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
+
 @Service
 public class BusinessConfigService {
 
 	private final BusinessConfigRepository businessConfigRepository;
+	private final JobRepository jobRepository;
+	private final CompanyRepository companyRepository;
+	private final UserRepository userRepository;
 	private final BusinessConfigMapper businessConfigMapper;
 	private final PublicCatalogCacheService publicCatalogCacheService;
 	private final MessageService messageService;
@@ -37,11 +53,17 @@ public class BusinessConfigService {
 
 	public BusinessConfigService(
 			BusinessConfigRepository businessConfigRepository,
+			JobRepository jobRepository,
+			CompanyRepository companyRepository,
+			UserRepository userRepository,
 			BusinessConfigMapper businessConfigMapper,
 			PublicCatalogCacheService publicCatalogCacheService,
 			MessageService messageService,
 			FileStorageService fileStorageService) {
 		this.businessConfigRepository = businessConfigRepository;
+		this.jobRepository = jobRepository;
+		this.companyRepository = companyRepository;
+		this.userRepository = userRepository;
 		this.businessConfigMapper = businessConfigMapper;
 		this.publicCatalogCacheService = publicCatalogCacheService;
 		this.messageService = messageService;
@@ -49,9 +71,15 @@ public class BusinessConfigService {
 	}
 
 	public ResponseEntity<ApiResponse<BusinessConfigPublicResponse>> getPublic() {
+		long jobCount = jobRepository.countApprovedOpen(
+				JobStatusEnum.APPROVED.name(),
+				CompanyStatusEnum.APPROVED.name(),
+				LocalDate.now());
+		long companyCount = companyRepository.countByStatusAndActiveTrue(CompanyStatusEnum.APPROVED.name());
+		long jobSeekerCount = userRepository.countByTypeAndActiveTrue(UserTypeEnum.JOB_SEEKER.name());
 		return ResponseEntity.ok(ApiResponse.success(
 				messageService.get("business-config.get.success"),
-				publicCatalogCacheService.businessConfig()));
+				publicCatalogCacheService.businessConfig().withCounts(jobCount, companyCount, jobSeekerCount)));
 	}
 
 	public ResponseEntity<ApiResponse<BusinessConfigResponse>> getAdmin() {
@@ -136,6 +164,9 @@ public class BusinessConfigService {
 		}
 		if (request.footerPhone() != null) {
 			config.setFooterPhone(trimToNull(request.footerPhone()));
+		}
+		if (request.notificationEmails() != null) {
+			config.setNotificationEmails(normalizeNotificationEmails(request.notificationEmails()));
 		}
 		if (request.footerEmail() != null) {
 			config.setFooterEmail(trimToNull(request.footerEmail()));
@@ -236,8 +267,7 @@ public class BusinessConfigService {
 				throw new BusinessRuleException(rangeMessageKey);
 			}
 			return value;
-		}
-		catch (NumberFormatException ex) {
+		} catch (NumberFormatException ex) {
 			throw new BusinessRuleException(
 					"error.business-config.coordinate.invalid",
 					raw == null ? "" : raw.trim());
@@ -250,6 +280,38 @@ public class BusinessConfigService {
 						"error.resource.business-config",
 						"id",
 						Constants.BUSINESS_CONFIG_ID));
+	}
+
+	private String normalizeNotificationEmails(String raw) {
+		if (!StringUtils.hasText(raw)) {
+			return null;
+		}
+		List<String> emails = new ArrayList<>();
+		for (String part : raw.split(",")) {
+			if (!StringUtils.hasText(part)) {
+				continue;
+			}
+			String email = part.trim().toLowerCase(Locale.ROOT);
+			try {
+				InternetAddress address = new InternetAddress(email);
+				address.validate();
+			} catch (AddressException ex) {
+				throw new BusinessRuleException(
+						"error.business-config.notification-email.invalid",
+						part.trim());
+			}
+			if (!emails.contains(email)) {
+				emails.add(email);
+			}
+		}
+		if (emails.isEmpty()) {
+			return null;
+		}
+		String joined = String.join(", ", emails);
+		if (joined.length() > 2000) {
+			throw new BusinessRuleException("error.business-config.notification-emails.max-length");
+		}
+		return joined;
 	}
 
 	private String trimToNull(String value) {

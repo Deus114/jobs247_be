@@ -26,6 +26,9 @@ public class AdminUser extends BaseEntity {
 	@JoinColumn(name = "role_id", nullable = false)
 	private AdminRole role;
 
+	@Column(name = "push_enabled", nullable = false)
+	private boolean pushEnabled = true;
+
 	public String getUsername() {
 		return username;
 	}
@@ -64,5 +67,13 @@ public class AdminUser extends BaseEntity {
 
 	public void setRole(AdminRole role) {
 		this.role = role;
+	}
+
+	public boolean isPushEnabled() {
+		return pushEnabled;
+	}
+
+	public void setPushEnabled(boolean pushEnabled) {
+		this.pushEnabled = pushEnabled;
 	}
 }

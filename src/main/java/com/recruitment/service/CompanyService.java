@@ -50,6 +50,8 @@ import com.recruitment.exception.DuplicateResourceException;
 import com.recruitment.exception.InvalidTokenException;
 import com.recruitment.exception.ResourceNotFoundException;
 import com.recruitment.mapper.CompanyMapper;
+import com.recruitment.notification.AdminNotificationService;
+import com.recruitment.notification.UserNotificationService;
 import com.recruitment.repository.CompanyJoinRequestRepository;
 import com.recruitment.repository.CompanyMemberRepository;
 import com.recruitment.repository.CompanyRepository;
@@ -73,6 +75,8 @@ public class CompanyService {
 	private final ProvinceRepository provinceRepository;
 	private final FileStorageService fileStorageService;
 	private final CompanyMapper companyMapper;
+	private final AdminNotificationService adminNotificationService;
+	private final UserNotificationService userNotificationService;
 	private final MessageService messageService;
 
 	public CompanyService(
@@ -84,6 +88,8 @@ public class CompanyService {
 			ProvinceRepository provinceRepository,
 			FileStorageService fileStorageService,
 			CompanyMapper companyMapper,
+			AdminNotificationService adminNotificationService,
+			UserNotificationService userNotificationService,
 			MessageService messageService) {
 		this.companyRepository = companyRepository;
 		this.companyMemberRepository = companyMemberRepository;
@@ -93,6 +99,8 @@ public class CompanyService {
 		this.provinceRepository = provinceRepository;
 		this.fileStorageService = fileStorageService;
 		this.companyMapper = companyMapper;
+		this.adminNotificationService = adminNotificationService;
+		this.userNotificationService = userNotificationService;
 		this.messageService = messageService;
 	}
 
@@ -174,6 +182,7 @@ public class CompanyService {
 
 		Company saved = companyRepository.save(company);
 		saveOwner(saved, employer);
+		adminNotificationService.notifyCompanyPending(saved, employer.getEmail());
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(
 				HttpStatus.CREATED.value(),
@@ -284,6 +293,7 @@ public class CompanyService {
 		joinRequest.setUpdatedBy(employer.getEmail());
 
 		CompanyJoinRequest saved = companyJoinRequestRepository.save(joinRequest);
+		userNotificationService.notifyJoinRequestCreated(saved, employer.getEmail());
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(
 				HttpStatus.CREATED.value(),
 				messageService.get("company.join-request.create.success"),

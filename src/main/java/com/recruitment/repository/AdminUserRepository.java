@@ -1,5 +1,6 @@
 package com.recruitment.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +16,8 @@ import com.recruitment.entity.AdminUser;
 public interface AdminUserRepository extends JpaRepository<AdminUser, Long>, JpaSpecificationExecutor<AdminUser> {
 
 	Optional<AdminUser> findByUsername(String username);
+
+	List<AdminUser> findByActiveTrue();
 
 	@Query("""
 			SELECT u FROM AdminUser u

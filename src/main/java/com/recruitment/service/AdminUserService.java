@@ -152,6 +152,9 @@ public class AdminUserService {
 		if (StringUtils.hasText(request.name())) {
 			adminUser.setName(request.name().trim());
 		}
+		if (request.pushEnabled() != null) {
+			adminUser.setPushEnabled(request.pushEnabled());
+		}
 		applyPasswordChange(adminUser, request.currentPassword(), request.newPassword());
 		adminUser.setUpdatedBy(username);
 

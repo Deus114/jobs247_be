@@ -7,6 +7,7 @@ public record BusinessConfigResponse(
 		String siteName,
 		String tagline,
 		String email,
+		String notificationEmails,
 		String phone,
 		String address,
 		String taxCode,
