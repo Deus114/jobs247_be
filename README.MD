@@ -2,7 +2,7 @@
 
 # Deploy
 
-https://jobs247-demo.duckdns.org//swagger-ui/index.html
+https://jobs247-demo.duckdns.org/swagger-ui/index.html
 
 - Java 25
 - Spring Boot 4
