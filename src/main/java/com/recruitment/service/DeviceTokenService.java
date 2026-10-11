@@ -2,6 +2,7 @@ package com.recruitment.service;
 
 import java.time.Instant;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -79,14 +80,31 @@ public class DeviceTokenService {
 
 	private void upsert(String ownerType, Long ownerId, RegisterDeviceTokenRequest request) {
 		String tokenValue = request.token().trim();
-		DeviceToken deviceToken = deviceTokenRepository.findByToken(tokenValue).orElseGet(DeviceToken::new);
+		DeviceToken deviceToken = deviceTokenRepository.findByOwnerTypeAndToken(ownerType, tokenValue)
+				.orElseGet(DeviceToken::new);
+		applyRegistration(deviceToken, ownerType, ownerId, tokenValue, request);
+		try {
+			deviceTokenRepository.saveAndFlush(deviceToken);
+		} catch (DataIntegrityViolationException ex) {
+			DeviceToken existing = deviceTokenRepository.findByOwnerTypeAndToken(ownerType, tokenValue)
+					.orElseThrow(() -> ex);
+			applyRegistration(existing, ownerType, ownerId, tokenValue, request);
+			deviceTokenRepository.save(existing);
+		}
+	}
+
+	private void applyRegistration(
+			DeviceToken deviceToken,
+			String ownerType,
+			Long ownerId,
+			String tokenValue,
+			RegisterDeviceTokenRequest request) {
 		deviceToken.setOwnerType(ownerType);
 		deviceToken.setOwnerId(ownerId);
 		deviceToken.setToken(tokenValue);
 		deviceToken.setPlatform(normalizePlatform(request.platform()));
 		deviceToken.setDeviceInfo(trimToNull(request.deviceInfo()));
 		deviceToken.setLastSeenAt(Instant.now());
-		deviceTokenRepository.save(deviceToken);
 	}
 
 	@Transactional

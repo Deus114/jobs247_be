@@ -14,7 +14,7 @@ import com.recruitment.entity.DeviceToken;
 @Repository
 public interface DeviceTokenRepository extends JpaRepository<DeviceToken, Long> {
 
-	Optional<DeviceToken> findByToken(String token);
+	Optional<DeviceToken> findByOwnerTypeAndToken(String ownerType, String token);
 
 	List<DeviceToken> findByOwnerTypeAndOwnerId(String ownerType, Long ownerId);
 

@@ -14,7 +14,7 @@ import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "device_tokens", uniqueConstraints = {
-		@UniqueConstraint(name = "uk_device_tokens_token", columnNames = { "token" })
+		@UniqueConstraint(name = "uk_device_tokens_owner_token", columnNames = { "owner_type", "token" })
 }, indexes = {
 		@Index(name = "idx_device_tokens_owner", columnList = "owner_type, owner_id")
 })
