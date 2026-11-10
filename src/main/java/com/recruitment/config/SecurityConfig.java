@@ -2,9 +2,9 @@ package com.recruitment.config;
 
 import java.util.Arrays;
 import java.util.List;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -29,10 +30,12 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.recruitment.dto.response.common.ApiResponse;
+import com.recruitment.filter.ApiRateLimitFilter;
 import com.recruitment.security.PermissionAuthorizationManager;
 import com.recruitment.service.MessageService;
 import com.recruitment.util.constant.Constants;
 
+import jakarta.servlet.http.HttpServletRequest;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
@@ -97,8 +100,16 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	FilterRegistrationBean<ApiRateLimitFilter> apiRateLimitFilterRegistration(ApiRateLimitFilter filter) {
+		FilterRegistrationBean<ApiRateLimitFilter> registration = new FilterRegistrationBean<>(filter);
+		registration.setEnabled(false);
+		return registration;
+	}
+
+	@Bean
+	SecurityFilterChain filterChain(HttpSecurity http, ApiRateLimitFilter apiRateLimitFilter) throws Exception {
 		http
+
 				.csrf(csrf -> csrf.disable())
 				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -116,7 +127,11 @@ public class SecurityConfig {
 						.permitAll()
 						.requestMatchers(
 								Constants.ADMIN_USERS_ME_PATH,
-								Constants.AUTH_ME_PATH)
+								Constants.AUTH_ME_PATH,
+								Constants.ADMIN_NOTIFICATIONS_BASE_PATH,
+								Constants.ADMIN_NOTIFICATIONS_BASE_PATH + "/**",
+								Constants.ADMIN_DEVICE_TOKENS_BASE_PATH,
+								Constants.ADMIN_DEVICE_TOKENS_BASE_PATH + "/**")
 						.authenticated()
 						.requestMatchers(Constants.ADMIN_API_PATTERN).access(permissionAuthorizationManager)
 						.anyRequest().authenticated())
@@ -125,7 +140,8 @@ public class SecurityConfig {
 						.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
 				.exceptionHandling(ex -> ex
 						.authenticationEntryPoint(authenticationEntryPoint())
-						.accessDeniedHandler(accessDeniedHandler()));
+						.accessDeniedHandler(accessDeniedHandler()))
+				.addFilterAfter(apiRateLimitFilter, BearerTokenAuthenticationFilter.class);
 
 		return http.build();
 	}

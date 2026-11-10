@@ -116,8 +116,6 @@ public class AdminRbacSeeder implements CommandLineRunner {
 		seeds.addAll(companyPermissionSeeds());
 		seeds.addAll(jobPermissionSeeds());
 		seeds.addAll(applicationPermissionSeeds());
-		seeds.addAll(notificationPermissionSeeds());
-		seeds.addAll(deviceTokenPermissionSeeds());
 		seeds.addAll(dashboardPermissionSeeds());
 
 		Set<String> seedKeys = new HashSet<>();
@@ -365,32 +363,10 @@ public class AdminRbacSeeder implements CommandLineRunner {
 						"DELETE", Constants.ADMIN_APPLICATIONS_BASE_PATH + "/{id}/permanent"));
 	}
 
-	private List<PermissionSeed> notificationPermissionSeeds() {
-		return List.of(
-				new PermissionSeed("VIEW_NOTIFICATIONS", "Xem danh sách thông báo", MODULE_NOTIFICATION, "GET",
-						Constants.ADMIN_NOTIFICATIONS_BASE_PATH),
-				new PermissionSeed("VIEW_NOTIFICATION_UNREAD_COUNT", "Xem số thông báo chưa đọc", MODULE_NOTIFICATION,
-						"GET", Constants.ADMIN_NOTIFICATIONS_BASE_PATH + "/unread-count"),
-				new PermissionSeed("READ_NOTIFICATION", "Đánh dấu thông báo đã đọc", MODULE_NOTIFICATION, "PATCH",
-						Constants.ADMIN_NOTIFICATIONS_BASE_PATH + "/{id}/read"),
-				new PermissionSeed("READ_ALL_NOTIFICATIONS", "Đánh dấu tất cả thông báo đã đọc", MODULE_NOTIFICATION,
-						"PATCH", Constants.ADMIN_NOTIFICATIONS_BASE_PATH + "/read-all"),
-				new PermissionSeed("DELETE_NOTIFICATION", "Xóa thông báo", MODULE_NOTIFICATION, "DELETE",
-						Constants.ADMIN_NOTIFICATIONS_BASE_PATH + "/{id}"));
-	}
-
 	private List<PermissionSeed> dashboardPermissionSeeds() {
 		return List.of(
 				new PermissionSeed("VIEW_DASHBOARD", "Xem thống kê tổng quan", MODULE_DASHBOARD, "GET",
 						Constants.ADMIN_DASHBOARD_PATH));
-	}
-
-	private List<PermissionSeed> deviceTokenPermissionSeeds() {
-		return List.of(
-				new PermissionSeed("REGISTER_DEVICE_TOKEN", "Đăng ký device token FCM", MODULE_DEVICE_TOKEN, "POST",
-						Constants.ADMIN_DEVICE_TOKENS_BASE_PATH),
-				new PermissionSeed("UNREGISTER_DEVICE_TOKEN", "Hủy device token FCM", MODULE_DEVICE_TOKEN, "DELETE",
-						Constants.ADMIN_DEVICE_TOKENS_BASE_PATH));
 	}
 
 	private boolean applySeed(AdminPermission permission, PermissionSeed seed) {
