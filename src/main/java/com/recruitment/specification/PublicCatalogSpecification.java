@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
@@ -19,6 +17,12 @@ import com.recruitment.enums.CompanyStatusEnum;
 import com.recruitment.enums.JobStatusEnum;
 import com.recruitment.util.helper.AccentHelper;
 import com.recruitment.util.helper.SearchHelper;
+
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 
 public final class PublicCatalogSpecification {
 
@@ -96,32 +100,103 @@ public final class PublicCatalogSpecification {
 	public static Specification<Job> relatedJobs(Job source) {
 		List<Long> industryIds = source.getIndustries().stream().map(industry -> industry.getId()).toList();
 		List<Long> provinceIds = source.getProvinces().stream().map(province -> province.getId()).toList();
+		return recommendedJobs(industryIds, provinceIds, List.of(source.getId()));
+	}
+
+	/**
+	 * Việc public còn hạn, cùng ngành hoặc địa điểm với lịch sử xem; loại trừ id đã xem.
+	 */
+	public static Specification<Job> recommendedJobs(
+			List<Long> industryIds,
+			List<Long> provinceIds,
+			List<Long> excludeJobIds) {
 		return (root, query, criteriaBuilder) -> {
 			if (query != null) {
 				query.distinct(true);
 			}
-			Predicate base = criteriaBuilder.and(
-					criteriaBuilder.equal(root.get("status"), JobStatusEnum.APPROVED.name()),
-					criteriaBuilder.isTrue(root.get("active")),
-					criteriaBuilder.greaterThanOrEqualTo(root.get("deadline"), LocalDate.now()),
-					criteriaBuilder.equal(root.get("company").get("status"), CompanyStatusEnum.APPROVED.name()),
-					criteriaBuilder.isTrue(root.get("company").get("active")),
-					criteriaBuilder.notEqual(root.get("id"), source.getId()));
+			Predicate base = publicVisiblePredicate(root, criteriaBuilder, excludeJobIds);
+
+			boolean hasIndustry = hasIds(industryIds);
+			boolean hasProvince = hasIds(provinceIds);
+			if (!hasIndustry && !hasProvince) {
+				return criteriaBuilder.and(base, criteriaBuilder.disjunction());
+			}
 
 			Predicate related = criteriaBuilder.disjunction();
-			if (!industryIds.isEmpty()) {
+			if (hasIndustry) {
 				Join<?, ?> industries = root.join("industries");
 				related = criteriaBuilder.or(related, industries.get("id").in(industryIds));
 			}
-			if (!provinceIds.isEmpty()) {
+			if (hasProvince) {
 				Join<?, ?> provinces = root.join("provinces");
 				related = criteriaBuilder.or(related, provinces.get("id").in(provinceIds));
 			}
-			if (industryIds.isEmpty() && provinceIds.isEmpty()) {
-				return criteriaBuilder.and(base, criteriaBuilder.disjunction());
-			}
 			return criteriaBuilder.and(base, related);
 		};
+	}
+
+	/**
+	 * Việc public còn hạn dùng để bù size. Chỉ loại tin thuộc phần gợi ý
+	 * (khớp ngành/địa điểm và không nằm trong lịch sử xem); tin đã xem vẫn được lấy.
+	 */
+	public static Specification<Job> latestPublicJobs(
+			List<Long> industryIds,
+			List<Long> provinceIds,
+			List<Long> viewedJobIds) {
+		return (root, query, criteriaBuilder) -> {
+			Predicate base = publicVisiblePredicate(root, criteriaBuilder, List.of());
+			boolean hasIndustry = hasIds(industryIds);
+			boolean hasProvince = hasIds(provinceIds);
+			if (!hasIndustry && !hasProvince) {
+				return base;
+			}
+
+			Predicate related = criteriaBuilder.disjunction();
+			if (hasIndustry) {
+				Subquery<Long> industryMatch = query.subquery(Long.class);
+				Root<Job> jobRoot = industryMatch.from(Job.class);
+				Join<?, ?> industries = jobRoot.join("industries");
+				industryMatch.select(jobRoot.get("id"));
+				industryMatch.where(
+						criteriaBuilder.equal(jobRoot.get("id"), root.get("id")),
+						industries.get("id").in(industryIds));
+				related = criteriaBuilder.or(related, criteriaBuilder.exists(industryMatch));
+			}
+			if (hasProvince) {
+				Subquery<Long> provinceMatch = query.subquery(Long.class);
+				Root<Job> jobRoot = provinceMatch.from(Job.class);
+				Join<?, ?> provinces = jobRoot.join("provinces");
+				provinceMatch.select(jobRoot.get("id"));
+				provinceMatch.where(
+						criteriaBuilder.equal(jobRoot.get("id"), root.get("id")),
+						provinces.get("id").in(provinceIds));
+				related = criteriaBuilder.or(related, criteriaBuilder.exists(provinceMatch));
+			}
+
+			Predicate inRecommended = related;
+			if (!CollectionUtils.isEmpty(viewedJobIds)) {
+				inRecommended = criteriaBuilder.and(
+						related,
+						criteriaBuilder.not(root.get("id").in(viewedJobIds)));
+			}
+			return criteriaBuilder.and(base, criteriaBuilder.not(inRecommended));
+		};
+	}
+
+	private static Predicate publicVisiblePredicate(
+			Root<Job> root,
+			CriteriaBuilder criteriaBuilder,
+			List<Long> excludeJobIds) {
+		Predicate base = criteriaBuilder.and(
+				criteriaBuilder.equal(root.get("status"), JobStatusEnum.APPROVED.name()),
+				criteriaBuilder.isTrue(root.get("active")),
+				criteriaBuilder.greaterThanOrEqualTo(root.get("deadline"), LocalDate.now()),
+				criteriaBuilder.equal(root.get("company").get("status"), CompanyStatusEnum.APPROVED.name()),
+				criteriaBuilder.isTrue(root.get("company").get("active")));
+		if (!CollectionUtils.isEmpty(excludeJobIds)) {
+			base = criteriaBuilder.and(base, criteriaBuilder.not(root.get("id").in(excludeJobIds)));
+		}
+		return base;
 	}
 
 	public static Specification<Company> buildCompanies(PublicCompanyFilterRequest filter) {

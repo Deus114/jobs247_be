@@ -41,6 +41,7 @@ public class PublicJobService {
 	private final SavedJobRepository savedJobRepository;
 	private final JobMapper jobMapper;
 	private final HotJobQueryService hotJobQueryService;
+	private final JobViewHistoryService jobViewHistoryService;
 	private final MessageService messageService;
 
 	public PublicJobService(
@@ -49,12 +50,14 @@ public class PublicJobService {
 			SavedJobRepository savedJobRepository,
 			JobMapper jobMapper,
 			HotJobQueryService hotJobQueryService,
+			JobViewHistoryService jobViewHistoryService,
 			MessageService messageService) {
 		this.jobRepository = jobRepository;
 		this.jobApplicationRepository = jobApplicationRepository;
 		this.savedJobRepository = savedJobRepository;
 		this.jobMapper = jobMapper;
 		this.hotJobQueryService = hotJobQueryService;
+		this.jobViewHistoryService = jobViewHistoryService;
 		this.messageService = messageService;
 	}
 
@@ -89,6 +92,9 @@ public class PublicJobService {
 	@Transactional(readOnly = true)
 	public ResponseEntity<ApiResponse<PublicJobResponse>> getJob(Long id, Long viewerUserId) {
 		Job job = requirePublicJob(id);
+		if (viewerUserId != null) {
+			jobViewHistoryService.recordView(viewerUserId, job);
+		}
 		boolean applied = viewerUserId != null
 				&& jobApplicationRepository.countByJobIdAndUserIdIncludingDeleted(job.getId(), viewerUserId) > 0;
 		boolean saved = viewerUserId != null

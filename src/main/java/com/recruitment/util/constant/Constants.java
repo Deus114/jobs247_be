@@ -86,6 +86,7 @@ public final class Constants {
 			+ "/jobs/{jobId}/applications";
 	public static final String JOB_SEEKER_APPLICATIONS_BASE_PATH = JOB_SEEKER_API_BASE_PATH + "/applications";
 	public static final String JOB_SEEKER_SAVED_JOBS_BASE_PATH = JOB_SEEKER_API_BASE_PATH + "/saved-jobs";
+	public static final String JOB_SEEKER_RECOMMENDED_JOBS_BASE_PATH = JOB_SEEKER_API_BASE_PATH + "/recommended-jobs";
 	public static final String ADMIN_APPLICATIONS_BASE_PATH = "/api/v1/admin/applications";
 
 	public static final String USER_NOTIFICATIONS_BASE_PATH = "/api/v1/notifications";
